@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>문자전쟁 ONLINE</title>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+*{box-sizing:border-box} :root{--accent:#fee500;--accentText:#222;--bg:#fff;--surface:#f6f6f6;--chat:#b9cbd0;--mine:#fee500;--other:#fff;--ink:#202127;--muted:#858891;--line:#e7e7e7;--shadow:0 8px 24px #0002}
+body.insta{--accent:#b64bd7;--accentText:#fff;--bg:#fff;--surface:#f7f4f8;--chat:#fff;--mine:linear-gradient(130deg,#7956e8,#e64c9a);--other:#f0f0f0;--line:#eee8f1}
+body.dark{--accent:#b64bd7;--accentText:#fff;--bg:#17171d;--surface:#25252e;--chat:#111116;--mine:linear-gradient(130deg,#7956e8,#e64c9a);--other:#292932;--ink:#f5f5f7;--muted:#aaa;--line:#393943}
+body{margin:0;background:#e9e9ed;color:var(--ink);font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif}.app{width:min(100%,560px);height:100dvh;min-height:640px;margin:auto;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;position:relative;box-shadow:0 0 40px #0002}header{height:60px;flex:none;padding:0 15px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.logo{font-size:19px;font-weight:1000;letter-spacing:-1px}.logo em{font-style:normal;color:var(--accent)}.theme{display:flex;gap:5px}.theme button,.ghost{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 9px;font-size:11px;font-weight:800}.screen{display:none;flex:1;min-height:0;overflow:auto}.screen.active{display:flex;flex-direction:column}.center{padding:23px 19px;justify-content:center;gap:14px}h1{font-size:30px;line-height:1.15;letter-spacing:-1.4px;margin:8px 0}h2{font-size:18px;margin:0}p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}.pill{display:inline-block;padding:6px 10px;border-radius:30px;background:var(--surface);font-size:10px;font-weight:900;color:var(--muted)}.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px}.btn{border:0;border-radius:13px;background:var(--accent);color:var(--accentText);font-size:14px;font-weight:950;padding:15px;cursor:pointer}.btn.secondary{background:var(--surface);border:1px solid var(--line);color:var(--ink)}.btn:disabled{opacity:.4}.field{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font-size:14px}label{display:block;margin:12px 0 6px;font-size:12px;font-weight:900}.row{display:flex;gap:8px}.row>*{flex:1}.status{padding:10px;border-radius:11px;background:var(--surface);font-size:11px;color:var(--muted);line-height:1.5}.roomtop{padding:11px 14px;background:var(--surface);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);font-size:12px}.people{padding:9px 12px;display:flex;gap:7px;overflow:auto;border-bottom:1px solid var(--line);white-space:nowrap}.person{font-size:11px;background:var(--surface);padding:7px 10px;border-radius:20px}.person.active{outline:2px solid var(--accent);font-weight:900}.chat{flex:1;min-height:100px;overflow:auto;background:var(--chat);padding:13px;display:flex;flex-direction:column;gap:10px}.system{align-self:center;background:#0008;color:white;padding:6px 10px;border-radius:20px;font-size:10px;text-align:center}.msgrow{display:flex;align-items:flex-end;gap:7px}.msgrow.mine{justify-content:flex-end}.msgwrap{max-width:82%}.who{font-size:10px;color:var(--muted);margin:0 0 4px 3px}.bubble{padding:13px 15px;border-radius:17px;background:var(--other);color:var(--ink);font-size:15px;line-height:1.5;overflow-wrap:anywhere}.mine .bubble{background:var(--mine);color:white}.kakao .mine .bubble{color:#222}.playarea{padding:12px 12px 10px;background:var(--bg);border-top:1px solid var(--line)}.handhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.handhead b{font-size:13px}.handhead span{font-size:10px;color:var(--muted)}.hand{display:flex;gap:10px;overflow-x:auto;padding:5px 3px 15px;scroll-snap-type:x mandatory}.card{flex:0 0 148px;min-width:148px;min-height:190px;border:1px solid #d8d4ca;border-radius:13px;padding:9px 7px;background:linear-gradient(150deg,#fffef9,#f0ece1);color:#25232a;text-align:left;box-shadow:0 4px 9px #0002;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:.15s}.card:nth-child(2){transform:translateY(3px)}.card:nth-child(4){transform:translateY(2px)}#cardPage{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}#cardPage .card{min-width:0;width:100%;min-height:190px}.card .suit{font-size:10px;font-weight:1000;color:#9b5bba;letter-spacing:.4px}.card .copy{font-size:12px;font-weight:950;line-height:1.35;overflow-wrap:anywhere}.card .index{font-size:10px;color:#888;text-align:right}.card.selected{outline:3px solid var(--accent);transform:translateY(-7px);box-shadow:0 9px 18px #0003}.card:disabled{opacity:.38;filter:grayscale(1)}.card.empty{visibility:hidden}.sendrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.sendrow select{min-width:0;width:100%;padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--bg);color:var(--ink)}.sendrow .btn{padding:12px 16px}.hint{font-size:10px;color:var(--muted);padding-top:7px;min-height:20px}footer{height:52px;flex:none;display:flex;border-top:1px solid var(--line)}footer button{flex:1;border:0;background:var(--bg);color:var(--muted);font-size:10px;font-weight:850}footer button.active{color:var(--accent)}.toast{position:absolute;bottom:64px;left:50%;transform:translateX(-50%);background:#222;color:white;padding:9px 14px;border-radius:30px;font-size:11px;opacity:0;pointer-events:none;z-index:5}.toast.show{opacity:1}.hide{display:none!important}.roomcode{font-size:32px;font-weight:1000;letter-spacing:5px;text-align:center;padding:8px}
+@media(max-width:390px){.hand{gap:9px}.card{flex-basis:142px;min-width:142px;min-height:180px;padding:12px}.card .copy{font-size:13px}.card .suit{font-size:10px}.theme button{padding:7px 6px;font-size:10px}}
+@media(min-width:600px){body{padding:18px}.app{height:calc(100dvh - 36px);border-radius:24px}}
+
+/* V4: cinematic deal, tutorial, full-size playable hand */
+.deal-overlay{position:absolute;inset:60px 0 52px;z-index:20;background:rgba(12,12,18,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;color:white}
+.deal-title{font-size:24px;font-weight:1000;letter-spacing:-1px}.deal-stack{height:220px;width:100%;display:flex;justify-content:center;align-items:center;position:relative}
+.deal-card{position:absolute;width:142px;height:194px;border:3px solid #fff;border-radius:18px;background:repeating-linear-gradient(135deg,#27243b 0 9px,#40335f 9px 18px);box-shadow:0 12px 30px #0008;display:grid;place-items:center;font-size:42px;font-weight:1000;color:#fff;animation:dealFly .72s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i)*.16s)}
+@keyframes dealFly{0%{opacity:0;transform:translate(0,-260px) rotate(-28deg) scale(.65)}65%{opacity:1;transform:translate(calc((var(--i) - 2)*52px),8px) rotate(calc((var(--i) - 2)*8deg)) scale(1.04)}100%{opacity:1;transform:translate(calc((var(--i) - 2)*48px),0) rotate(calc((var(--i) - 2)*7deg)) scale(1)}}
+.tutorial{position:absolute;inset:60px 0 52px;z-index:25;background:#090910ed;color:#fff;display:flex;align-items:center;justify-content:center;padding:22px}.tutorial-box{width:min(100%,430px);background:#22212b;border:1px solid #ffffff24;border-radius:24px;padding:23px;box-shadow:0 20px 70px #0009}.tutorial-step{font-size:11px;color:#f4d34f;font-weight:1000;letter-spacing:1px}.tutorial-box h2{font-size:25px;margin:12px 0}.tutorial-box p{font-size:15px;color:#ddd;line-height:1.7}.tutorial-example{margin:18px 0;padding:17px;border-radius:15px;background:#34313f;font-size:17px;font-weight:900;line-height:1.5}.tutorial-actions{display:flex;gap:9px;margin-top:20px}.tutorial-actions button{flex:1}
+#game{overflow:hidden}.game-main{display:flex;flex-direction:column;flex:1;min-height:0}.chat{flex:1 1 auto;min-height:0;height:100%;padding:18px 15px;gap:14px}.playarea{flex:0 0 auto;padding:9px 10px 10px;max-height:35vh;overflow:hidden}.handhead{margin-bottom:6px}.hand{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow-y:auto;max-height:27vh;padding:3px 2px 8px;scroll-snap-type:none}.card{width:100%;min-width:0;min-height:clamp(135px,21vh,190px);border:2px solid #d8d0c1;border-radius:17px;padding:13px 12px;background:linear-gradient(145deg,#fffefb,#e9e0d1);box-shadow:0 5px 0 #c9bdab,0 9px 17px #0002;display:flex;flex-direction:column;justify-content:space-between;gap:10px;text-align:left;cursor:pointer;transition:transform .12s,box-shadow .12s;touch-action:manipulation}.card:nth-child(2),.card:nth-child(4){transform:none}.card .suit{font-size:10px;color:#8a3c5f;font-weight:1000}.card .copy{font-size:clamp(14px,3.9vw,18px);font-weight:1000;line-height:1.35;overflow-wrap:anywhere;color:#201b22}.card .index{font-size:10px;color:#8b8176;text-align:right}.card:active{transform:scale(.97);box-shadow:0 2px 0 #c9bdab}.card.selected{outline:3px solid var(--accent)}.card:disabled{opacity:.42;filter:grayscale(.7)}.hand .card.playing{animation:cardPlay .38s ease-in forwards}@keyframes cardPlay{to{transform:translateY(-100px) scale(.68) rotate(-5deg);opacity:0}}
+/* V6: bigger chat viewport + card slam impact */
+.msgrow.incoming-impact .bubble{animation:bubbleImpact .52s cubic-bezier(.15,.85,.25,1) both}
+@keyframes bubbleImpact{0%{transform:scale(.55) translateY(-24px);opacity:.15}55%{transform:scale(1.12) translateY(2px)}78%{transform:scale(.96)}100%{transform:scale(1);opacity:1}}
+.app.slam-shake{animation:screenSlam .32s ease-out}@keyframes screenSlam{0%,100%{transform:translate3d(0,0,0)}18%{transform:translate3d(-5px,2px,0)}38%{transform:translate3d(5px,-2px,0)}58%{transform:translate3d(-3px,1px,0)}78%{transform:translate3d(2px,0,0)}}
+.slam-flash{position:absolute;inset:60px 0 52px;z-index:30;display:grid;place-items:center;pointer-events:none;overflow:hidden}
+.slam-word{font-size:clamp(58px,18vw,108px);font-weight:1000;letter-spacing:-7px;color:#fff;text-shadow:0 5px 0 #d62d24,0 10px 0 #8d1111,0 18px 35px #000b;transform:rotate(-12deg) scale(.2);animation:slamWord .62s cubic-bezier(.12,.8,.2,1) both}
+.slam-word:before,.slam-word:after{content:'✦';position:absolute;font-size:.42em;color:#ffe45e;text-shadow:0 3px 0 #c75a00}.slam-word:before{left:-.65em;top:-.25em}.slam-word:after{right:-.55em;bottom:-.15em}
+@keyframes slamWord{0%{opacity:0;transform:rotate(-12deg) scale(.2)}35%{opacity:1;transform:rotate(-12deg) scale(1.16)}55%{transform:rotate(-8deg) scale(.92)}75%{transform:rotate(-10deg) scale(1.04)}100%{opacity:0;transform:rotate(-10deg) scale(1.12)}}
+@media(max-height:720px){.playarea{max-height:32vh}.hand{max-height:24vh}.card{min-height:112px;padding:9px}.card .copy{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.slam-word,.app.slam-shake,.msgrow.incoming-impact .bubble,.hand .card.playing{animation-duration:.01ms!important}}
+.play-hint{font-size:11px;color:var(--muted);text-align:center;padding:4px 0 0}.sendrow,#target,#send,.hint,#cardPage{display:none!important}
+@media(min-width:560px){.hand{grid-template-columns:repeat(3,minmax(0,1fr));max-height:52vh}.card{min-height:175px}}
+</style></head><body class="kakao"><div class="app"><header><div class="logo">문자<em>전쟁</em> ONLINE</div><div class="theme"><button id="kakao">카카오톡</button><button id="insta">인스타 DM</button><button id="dark">다크</button></div></header>
+<section id="home" class="screen active center"><div><span class="pill">실시간 온라인 · 2~8명</span><h1>문자를 보내.<br>관계를 박살 내.</h1><p>모두가 같은 단체 톡방에서 대화합니다. 내 차례에 큰 문자 카드 한 장을 누르면 즉시 전송됩니다.</p></div><div class="panel"><b>방 코드로 함께하기</b><p style="margin-top:7px">비공개 방은 6자리 코드로 참가합니다. 공개방은 누구나 '공개방 바로 입장'으로 들어올 수 있습니다. 공개방은 전 세계 공용 1개이며 방장이 접속 중일 때만 열립니다.</p></div><button class="btn" id="start">온라인 게임 시작</button><button class="btn secondary" id="soloStart">혼자 하기 · AI와 플레이</button><div class="status" id="netStatus">온라인 연결 준비 중…</div></section>
+<section id="setup" class="screen center"><div><span class="pill">PLAYER</span><h1>닉네임을 정하세요.</h1><p>친구에게 표시될 이름입니다.</p></div><input id="nick" class="field" maxlength="16" placeholder="닉네임"><button class="btn" id="soloStart">🤖 AI와 혼자 플레이</button><button class="btn" id="create">비공개 방 만들기</button><button class="btn secondary" id="createPublic">공개방 만들기</button><div class="panel"><label>방 코드로 참가</label><input id="code" class="field" maxlength="6" placeholder="예: A7K2Q9" autocomplete="off" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:8px">코드로 참가</button><button class="btn secondary" id="joinPublic" style="width:100%;margin-top:8px">공개방 바로 입장</button></div><button class="ghost" id="back">뒤로</button></section>
+<section id="waiting" class="screen center"><div><span class="pill">ROOM</span><h1>플레이어를 기다리는 중</h1><p>방 코드를 친구에게 알려주세요. 친구가 코드로 참가하면 여기에 표시됩니다.</p></div><div class="panel"><div style="text-align:center;font-size:11px;color:var(--muted);font-weight:800">친구에게 알려줄 방 코드</div><div class="roomcode" id="roomCode"></div><div id="waitingList" style="margin-top:13px"></div></div><button class="btn" id="begin" disabled>게임 시작하기</button><button class="ghost" id="exitWait">방 나가기</button><div class="status">방장의 브라우저가 켜져 있어야 방이 유지됩니다. PeerJS 공용 시그널링 서비스로 연결을 협상하고, 게임 데이터는 WebRTC P2P로 전달됩니다.</div></section>
+<section id="game" class="screen"><div class="roomtop"><div><b id="roomTitle">ONLINE ROOM</b><div id="turnTitle" style="color:var(--muted);margin-top:3px">플레이어 연결 중</div></div></div><div class="people" id="people"></div><div class="game-main"><div class="chat" id="chat"><div class="system">모두가 함께 보는 단체 대화방입니다.</div></div><div class="playarea"><div class="handhead"><b>내 문자 카드 — 한 장을 눌러 바로 보내기</b><span id="count">5장</span></div><div class="hand" id="hand"></div><div class="play-hint" id="hint">내 차례에 카드 하나를 누르면 단체방에 전송됩니다.</div></div></div></section><div id="dealOverlay" class="deal-overlay hide"><div class="deal-title">카드 배분 중…</div><div class="deal-stack"><div class="deal-card" style="--i:0">문</div><div class="deal-card" style="--i:1">자</div><div class="deal-card" style="--i:2">전</div><div class="deal-card" style="--i:3">쟁</div><div class="deal-card" style="--i:4">!</div></div><div>오늘의 대참사가 시작됩니다.</div></div><div id="tutorial" class="tutorial hide"><div class="tutorial-box"><div class="tutorial-step" id="tStep">HOW TO PLAY · 1 / 3</div><h2 id="tTitle">이 게임은 이렇게 합니다</h2><p id="tBody"></p><div class="tutorial-example" id="tExample"></div><div class="tutorial-actions"><button class="btn secondary" id="tSkip">튜토리얼 건너뛰기</button><button class="btn" id="tNext">다음</button></div></div></div>
+<section id="players" class="screen center"><h1>참가자</h1><div class="panel" id="playerList"></div><button class="btn secondary" id="toGame1">채팅으로</button></section><section id="cards" class="screen center"><h1>내 손패</h1><p>게임 화면의 큰 카드를 누르면 단체방에 바로 전송됩니다.</p><div class="hand" id="cardPage" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div><button class="btn secondary" id="toGame2">채팅으로</button></section><section id="settings" class="screen center"><h1>설정</h1><div class="panel"><p>게임 설명을 다시 볼 수 있습니다.</p><button class="btn secondary" id="replayTutorial" style="width:100%;margin-top:10px">튜토리얼 다시 보기</button><p style="margin-top:14px">방을 나가면 현재 게임 연결이 종료됩니다.</p><button class="btn secondary" id="leave" style="width:100%;margin-top:12px">방 나가기</button></div></section>
+<footer id="tabs" class="hide"><button data-screen="game" class="active">▣<br>채팅</button><button data-screen="players">♙<br>플레이어</button><button data-screen="settings">⚙<br>설정</button></footer><div class="toast" id="toast"></div></div>
+<script>
+/* 문자전쟁 P2P 멀티플레이: 방장 Peer가 중계 노드, 게임 데이터는 WebRTC DataChannel로 전달 */
+const $=id=>document.getElementById(id);
+let peer=null,hostConn=null,connections=new Map(),room='',nick='',uid='',host=false,isPublic=false,soloMode=false,aiTimer=null;
+let players=[],hand=[],hands={},selected=-1,turnId='',started=false,roomPeerId='';
+const deck=[
+['긴급 공지','너희 둘 바람피운 거 나만 몰랐대. 그래서 지금부터 나도 모르는 척 안 할게.'],
+['단톡방 폭사','아 실수로 여기 올렸네. 근데 어차피 당사자 다 있잖아?'],
+['환승역','너 환승한 거 아니야. 내 차에서 걔 차로 갈아탄 거지.'],
+['읽씹의 이유','답장 안 한 게 아니라 답장할 가치가 없어서 회의 중이었어.'],
+['양다리 인증','둘한테 보낸 굿나잇 문자 시간이 똑같네. 복붙도 성의껏 해라.'],
+['전 애인 배송','네가 두고 간 옷 택배로 보냈어. 착불이고 수치심은 동봉 안 됨.'],
+['모텔 체크아웃','어제 모텔에서 봤어. 걱정 마, 너보다 네 애인이 더 놀라더라.'],
+['엄마가 아셔','네 어머니가 나한테 김장 오라시는데, 새 애인도 데려갈까?'],
+['결혼식 생중계','신랑 입장할 때 내가 영상 틀어도 돼? 우리 추억이 꽤 길던데.'],
+['부계정 참사','부계로 내 스토리 보다가 본계로 좋아요 눌렀더라. 손가락도 환승했냐?'],
+['새벽의 실수','술 취해서 네 이름 불렀어. 네 애인 옆에서. 마이크 켜진 줄 몰랐지.'],
+['계좌번호','사랑은 끝났고 네가 빌려 간 48만 원은 아직 진행 중이야.'],
+['증거 폴더','폴더 이름은 네 이름이야. 사진 날짜순으로 정리해 놨어. 고맙지?'],
+['공개 연애','비밀 연애라며? 네 애인이 내 게시물에 “언니”라고 댓글 달았는데.'],
+['친구비 환불','너랑 친구한 기간 계산해 봤어. 시간당 최저임금으로 청구할게.'],
+['네 편은 없어','다들 네 편인 척한 거야. 단톡방 나가고 나서 진짜 회의 시작했거든.'],
+['잘못 보낸 사진','사진 잘못 보냈다. 네 애인한테 보내려던 건데 너도 알아야 할 것 같아서.'],
+['동시 고백','너한테 고백한 날 네 친구한테도 고백했어. 둘 다 차일 줄은 몰랐지.'],
+['이중 예약','오늘 나랑 데이트라며. 네 위치 공유에는 다른 집 주소가 뜨는데?'],
+['프사 교체','네가 찍어준 사진 내렸어. 사진 속 네 손만 잘라서 새 프사로 썼어.'],
+['장례식 분위기','다들 조용히 해. 방금 신부 측에서 신랑 전 애인 명단을 보내왔어.'],
+['단체 사과','사과는 한 명씩 하지 마. 여기 관련자 6명 다 있으니까 한 번에 해.'],
+['네가 바람이야','내가 바람핀 게 아니라 네가 이미 전 애인이었어. 통보만 늦었지.'],
+['비밀번호 공유','네 폰 비번 아직 내 생일이네. 새 애인한테도 내 생일 외우라 그래.'],
+['택시비 정산','그날 네 애인 집까지 태워다 준 택시비 보내. 나 대리운전 아니야.'],
+['소개팅 대참사','소개팅 상대가 네 전 애인이더라. 시작 전에 서로 추모부터 했어.'],
+['가족 단톡 입장','이 얘기 가족 단톡에 올릴까? 네 아버지도 등장인물이라서.'],
+['임시 저장','네가 보낸 변명 세 개 다 저장했어. 다음엔 새 버전으로 부탁해.'],
+['하트의 의미','내 사진에 하트 누른 거 네 애인 계정으로도 봤어. 손가락이 바쁘네.'],
+['공동 친구','우리 공통 친구 12명한테 물어봤어. 다들 네가 먼저랬어.'],
+['현장 검거','문 열어. 너 지금 내 집 비밀번호 누르고 있잖아. CCTV도 보고 있어.'],
+['이별 회식','우리 이별 기념 회식하자. 참석자는 네 전 애인들로만 구성했어.'],
+['청첩장 반송','청첩장 잘 받았어. 축하금 대신 네가 나한테 한 거짓말 목록 보낼게.'],
+['카톡 프로필','프로필 뮤직 바꿨네. 가사 보내지 말고 미납금부터 보내.'],
+['연락 금지','연락하지 말라며? 그래서 네 친구한테 연락했어. 걔는 답장 빠르더라.'],
+['술자리 폭로','어제 네가 한 말 녹음됐어. 네가 제일 싫어하는 사람도 들었고.'],
+['대리 연애','네 애인한테 네 대신 답장해 줬어. 너보다 말이 잘 통하더라.'],
+['가짜 바쁨','바쁘다더니 스토리는 17개 올렸네. 손가락만 야근했나 봐.'],
+['전 애인 동맹','너희 전 애인들끼리 단톡 만들었어. 방 이름은 “생존자 모임”이야.'],
+['결제 내역','네 카드로 결제된 커플링 봤어. 사이즈가 내 것도 아니고 네 것도 아니네?'],
+['비밀 유지비','네 비밀 지켜준 값 아직 안 들어왔어. 오늘부터 무료 서비스 종료야.'],
+['네 물건','네 짐 문 앞에 뒀어. 비밀번호는 바꿨고 추억은 종량제 봉투에 넣었어.'],
+['연애 경력','네가 나한테는 첫사랑이라며. 네 친구는 네가 자기한테도 그랬대.'],
+['실시간 위치','위치 공유 꺼. 네가 어디 있는지보다 누구랑 있는지가 더 잘 보이거든.'],
+['축하 메시지','임신 축하해. 근데 아빠 후보가 셋이라 단톡 투표부터 열어야겠어.'],
+['공개 저격','스토리 내리기 전에 캡처했어. 태그할까, 실명으로 갈까?'],
+['읽음 1 표시','읽음 1인데 답이 없네. 나머지 7명은 이미 너 욕하는 중이야.'],
+['친구의 남친','네 남친이 나한테 상담하더라. 너랑 헤어질지 나랑 만날지.'],
+['최악의 변명','폰 배터리가 없었다며. 네 스토리 업로드는 무선 충전이었나 봐.'],
+['이중생활','낮에는 모범생, 밤에는 네 애인. 직업이 두 개면 세금도 두 배 내.'],
+['단톡 퇴장','나 나갈게. 여기서 제일 정상인 사람이 나라는 게 더 무서워.'],
+['상견례 참사','상견례 날짜 잡았어? 나도 갈게. 양가에 설명할 게 좀 있거든.'],
+['사과문 반려','사과문 반려야. 피해자 이름을 네 이름으로 쓴 것부터 틀렸어.'],
+['공용 비밀','우리 셋만 아는 비밀이라며. 지금 여기 열한 명이 알고 있는데?'],
+['헤어진 이유','우리가 헤어진 이유 기억나? 네가 내 친구랑 결혼 준비 중이었잖아.'],
+['커플 사진','커플 사진에서 내 얼굴만 지웠네. 원본은 이미 친구들한테 보냈어.'],
+['선물 회수','네가 준 목걸이 돌려줄게. 대신 네가 내놓은 자존심도 챙겨가.'],
+['대화 백업','대화 백업 완료. 네가 부인할 때마다 날짜와 시간을 읽어줄게.'],
+['새 애인 환영','새 애인 축하해. 나한테 물어보면 네 사용 설명서 보내줄게. 주의사항 많아.'],
+['마지막 경고','오늘 안에 정리해. 내일은 내가 아니라 단톡방 전체가 움직일 거야.'],
+['누가 누구를','너 나한테 환승했다고? 난 이미 네 친구랑 갈아탄 지 한 달인데.'],
+['카드값 폭탄','데이트 비용 반반 하자며. 네가 바람핀 날의 호텔비도 반반이야?'],
+['스토리 목격자','스토리 배경에 내 집 커튼 보이더라. 아직도 거기서 뭐 하는데?'],
+['가족의 선택','우리 엄마가 네 편이래. 나도 이제 엄마랑 손절해야 하나 봐.'],
+['최종 폭로','이제 다 말할게. 너희 둘 다 나한테 같은 거짓말을 했거든.'],
+['퇴장 선언','이 방에서 나가는 건 나지만, 캡처본은 이미 모두에게 갔어.'],
+['알림 폭주','잠깐만. 네 애인, 네 전 애인, 네 엄마가 동시에 나한테 전화 중이야.'],
+['현타 완료','너랑 다시 시작하느니 약관 80페이지를 처음부터 읽을래.'],
+['막장 엔딩','다들 진정해. 방금 신랑이 신부 말고 나한테 “도망가자” 보냈어.']
+].map((c,i)=>({id:'c'+i,label:c[0],text:c[1]}));
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function drawHand(){return shuffle(deck).slice(0,5)}
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.screen===id))}
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2300)}
+function status(t){$('netStatus').textContent=t}
+function rid(){return Math.random().toString(36).slice(2,8).toUpperCase()}
+function safe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function broadcast(data){for(const c of connections.values())if(c.open)c.send(data)}
+function directToPlayer(playerId,data){if(playerId===uid)return;const p=players.find(x=>x.id===playerId);const c=p&&connections.get(p.peer);if(c&&c.open)c.send(data)}
+function addSystem(text){const d=document.createElement('div');d.className='system';d.textContent=text;$('chat').appendChild(d);$('chat').scrollTop=$('chat').scrollHeight}
+let slamAudioContext=null;
+function playSlamSound(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;slamAudioContext=slamAudioContext||new AC();if(slamAudioContext.state==='suspended')slamAudioContext.resume();const ctx=slamAudioContext,now=ctx.currentTime;const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(105,now);osc.frequency.exponentialRampToValueAtTime(38,now+.22);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.48,now+.012);gain.gain.exponentialRampToValueAtTime(.0001,now+.32);osc.connect(gain);gain.connect(ctx.destination);osc.start(now);osc.stop(now+.34);const len=Math.floor(ctx.sampleRate*.12),buf=ctx.createBuffer(1,len,ctx.sampleRate),data=buf.getChannelData(0);for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*(1-i/len);const noise=ctx.createBufferSource(),ng=ctx.createGain(),filter=ctx.createBiquadFilter();noise.buffer=buf;filter.type='lowpass';filter.frequency.value=480;ng.gain.setValueAtTime(.22,now);ng.gain.exponentialRampToValueAtTime(.0001,now+.12);noise.connect(filter);filter.connect(ng);ng.connect(ctx.destination);noise.start(now);noise.stop(now+.13);}catch(e){}}
+function slamEffect(){const app=document.querySelector('.app');app.classList.remove('slam-shake');void app.offsetWidth;app.classList.add('slam-shake');const layer=document.createElement('div');layer.className='slam-flash';layer.innerHTML='<div class="slam-word">쾅!!!</div>';app.appendChild(layer);setTimeout(()=>layer.remove(),680);playSlamSound();}
+function addMessage(m){const from=players.find(x=>x.id===m.from)?.nick||'플레이어';const row=document.createElement('div');row.className='msgrow '+(m.from===uid?'mine':'')+' incoming-impact';const wrap=document.createElement('div');wrap.className='msgwrap';const who=document.createElement('div');who.className='who';who.textContent=from+' · 단체방';wrap.appendChild(who);const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=m.text;wrap.appendChild(bubble);row.appendChild(wrap);$('chat').appendChild(row);$('chat').scrollTop=$('chat').scrollHeight;slamEffect();}
+function updateWaiting(){ $('waitingList').innerHTML=players.map(p=>`<div class="person" style="display:inline-block;margin:3px">👤 ${safe(p.nick)} ${p.host?'· 방장':''}</div>`).join('');$('begin').disabled=!(host&&players.length>=2&&!started); }
+function render(){if(!started)return;$('people').innerHTML=players.map(p=>`<span class="person ${p.id===turnId?'active':''}">👤 ${safe(p.nick)}${p.id===uid?' · 나':''}</span>`).join('');const current=players.find(p=>p.id===turnId);$('turnTitle').textContent=(current?.nick||'상대')+' 차례';$('count').textContent=hand.length+'장 보유';$('hand').innerHTML=hand.map((c,i)=>`<button class="card ${i===selected?'selected':''}" data-card="${i}" ${turnId!==uid?'disabled':''}><span class="suit">${safe(c.label)}</span><span class="copy">${safe(c.text)}</span><span class="index">카드 ${String(i+1).padStart(2,'0')} · 눌러서 전송</span></button>`).join('');$('playerList').innerHTML=players.map(p=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)">👤 ${safe(p.nick)} ${p.id===uid?'(나)':''} ${p.id===turnId?' · 차례':''}</div>`).join('');$('hint').textContent=turnId===uid?'내 차례! 카드 한 장을 누르면 모두의 톡방에 바로 올라갑니다.':'다른 플레이어가 카드를 고르는 중입니다.';}
+const aiNames=['김막장봇','전애인봇','익명폭로봇'];
+const aiReplies=[
+'잠깐만. 방금 그 말 캡처해서 다른 단톡에도 올렸어.',
+'ㅋㅋㅋㅋ 너 지금 본인 얘기하는 거 맞지?',
+'나만 몰랐던 거야? 아니면 너만 숨긴 거야?',
+'증거는 이미 있고 변명은 듣지 않을게.',
+'미안한데 그 얘기 어제 네 전 애인한테도 들었어.',
+'와 이건 실시간으로 박제해야 한다.',
+'그 자신감으로 그런 짓을 했다는 게 더 무서워.',
+'잠시만 가족 단톡에 잘못 보낸 척하고 올게.',
+'너희 둘 다 조용히 해. 내가 양쪽한테 다른 얘기 들었거든.',
+'이 방 나가면 끝날 줄 알지? 스크린샷은 남아.'
+];
+function startSolo(){
+  if(aiTimer)clearTimeout(aiTimer);soloMode=true;host=false;isPublic=false;room='SOLO';nick=$('nick').value.trim()||'나';uid='solo-human';
+  players=[{id:uid,nick,host:true},...aiNames.slice(0,2).map((n,i)=>({id:'ai-'+i,nick:n,ai:true}))];
+  hand=drawHand();hands={};players.forEach(p=>hands[p.id]=p.id===uid?hand:drawHand());
+  started=true;turnId=uid;selected=-1;connections.clear();peer=null;hostConn=null;
+  $('chat').innerHTML='';$('roomTitle').textContent='# 혼자 하기 · AI 단체방';$('tabs').classList.remove('hide');
+  addSystem('AI 상대와 혼자 플레이를 시작했습니다. AI는 각자 자기 손패에서 카드를 골라 답장합니다.');
+  enterGameWithIntro();render();
+}
+function soloPlay(from,cardId){
+  if(!soloMode||!started||from!==turnId)return;
+  const h=hands[from]||[];const index=h.findIndex(c=>c.id===cardId);if(index<0)return;
+  const card=h.splice(index,1)[0];h.push(shuffle(deck)[0]);hands[from]=h;
+  const m={type:'message',from,label:card.label,text:card.text};addMessage(m);
+  const idx=players.findIndex(p=>p.id===from);turnId=players[(idx+1)%players.length].id;
+  if(from===uid){hand=h;selected=-1;}render();
+  if(turnId!==uid)scheduleAI();
+}
+function scheduleAI(){
+  if(!soloMode||!started)return;if(aiTimer)clearTimeout(aiTimer);
+  const bot=players.find(p=>p.id===turnId&&p.ai);if(!bot)return;
+  aiTimer=setTimeout(()=>{
+    if(!soloMode||!started||turnId!==bot.id)return;
+    const h=hands[bot.id]||[];const card=h.splice(Math.floor(Math.random()*h.length),1)[0]||shuffle(deck)[0];
+    h.push(shuffle(deck)[0]);hands[bot.id]=h;
+    addMessage({type:'message',from:bot.id,label:card.label,text:Math.random()<.62?card.text:aiReplies[Math.floor(Math.random()*aiReplies.length)]});
+    const idx=players.findIndex(p=>p.id===bot.id);turnId=players[(idx+1)%players.length].id;render();
+    if(turnId!==uid)scheduleAI();
+  },1100+Math.random()*900);
+}
+async function makePeer(id){if(typeof Peer==='undefined'){await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';sc.onload=resolve;sc.onerror=()=>reject(new Error('PeerJS 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 CDN 차단을 확인하세요.'));document.head.appendChild(sc);});}return new Promise((resolve,reject)=>{peer=new Peer(id||undefined,{debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]}});let settled=false;peer.on('open',pid=>{settled=true;resolve(pid)});peer.on('error',e=>{if(!settled){settled=true;reject(e)}else toast('연결 오류: '+e.type)});peer.on('disconnected',()=>{status('시그널링 서버 연결이 끊겼습니다. 재연결 중…');if(peer&&!peer.destroyed)peer.reconnect()});peer.on('connection',conn=>{if(!host){conn.close();return}connections.set(conn.peer,conn);conn.on('data',d=>hostReceive(conn,d));conn.on('close',()=>removePeer(conn.peer));conn.on('error',()=>removePeer(conn.peer));});});}
+function removePeer(peerId){connections.delete(peerId);const p=players.find(x=>x.peer===peerId);if(!p)return;players=players.filter(x=>x.peer!==peerId);delete hands[p.id];if(turnId===p.id)turnId=players[0]?.id||'';broadcast({type:'roster',players,turnId});updateWaiting();render();addSystem(p.nick+' 연결이 종료되었습니다.');}
+
+let tutorialIndex=0,tutorialDone=false;
+const tutorialSteps=[
+{title:'이 게임은 문자 카드로 하는 단체 채팅입니다',body:'상황 카드나 질문 카드는 없습니다. 내 손에 든 문장 카드가 곧 내가 보내는 문자입니다. 모두가 같은 단체 톡방에서 대화를 이어갑니다.',example:'예: “NEW PHONE WHO DIS — 번호 바꿨어. 너 같은 흑역사까지 백업할 필요는 없잖아.”'},
+{title:'내 차례가 오면 카드 한 장을 누르세요',body:'카드를 누르는 즉시 단체방에 전송됩니다. 누구에게 보낼지 고르거나 별도 전송 버튼을 누를 필요가 없습니다. 다음 플레이어 차례로 자동 이동합니다.',example:'한 명이 폭탄 문자를 던지면, 다음 사람은 자기 손패로 그 대화에 이어서 답장합니다.'},
+{title:'5장을 받고, 사용하면 새 카드가 들어옵니다',body:'각자 손패는 본인에게만 보입니다. 최대 8명이 한 방에서 순서대로 같은 톡방 대화를 이어갑니다. 목표는 정답 맞히기가 아니라 대화를 가장 미친 방향으로 몰고 가는 것!',example:'AI는 튜토리얼 예시에서만 등장할 수 있고, 실제 게임에서는 사람만 참여합니다.'}
+];
+function openTutorial(){tutorialIndex=0;renderTutorial();$('tutorial').classList.remove('hide')}
+function renderTutorial(){const x=tutorialSteps[tutorialIndex];$('tStep').textContent=`HOW TO PLAY · ${tutorialIndex+1} / ${tutorialSteps.length}`;$('tTitle').textContent=x.title;$('tBody').textContent=x.body;$('tExample').textContent=x.example;$('tNext').textContent=tutorialIndex===tutorialSteps.length-1?'게임 시작':'다음';}
+function finishTutorial(){ $('tutorial').classList.add('hide');startDealAnimation(); }
+$('tSkip').onclick=finishTutorial;$('tNext').onclick=()=>{if(tutorialIndex<tutorialSteps.length-1){tutorialIndex++;renderTutorial()}else finishTutorial()};
+function startDealAnimation(){const o=$('dealOverlay');o.classList.remove('hide');setTimeout(()=>{o.classList.add('hide');show('game');render()},1650)}
+function enterGameWithIntro(){ $('tabs').classList.remove('hide');$('roomTitle').textContent='# '+room;show('game');openTutorial();}
+
+$('soloStart').onclick=startSolo;$('kakao').onclick=()=>document.body.className='kakao';$('insta').onclick=()=>document.body.className='insta';$('dark').onclick=()=>document.body.className='dark';$('start').onclick=()=>show('setup');$('back').onclick=()=>show('home');
+async function createRoom(publicRoom=false){if($('create').dataset.busy==='1')return;$('create').dataset.busy='1';$('create').textContent='방 만드는 중…';nick=$('nick').value.trim();if(!nick){$('create').dataset.busy='0';$('create').textContent='방 만들기';return toast('닉네임을 입력하세요.');}host=true;isPublic=publicRoom;room=publicRoom?'PUBLIC':rid();uid='host-'+Math.random().toString(36).slice(2,8);roomPeerId=publicRoom?'mw-public-room-v1':'mwroom-'+room.toLowerCase();players=[{id:uid,nick,host:true}];hand=drawHand();hands={[uid]:hand};started=false;try{await makePeer(roomPeerId);$('roomCode').textContent=publicRoom?'공개방':room;updateWaiting();show('waiting');status(publicRoom?'공개방 생성 완료 · 누구나 공개방 입장 버튼으로 참가할 수 있습니다.':'비공개 방 생성 완료 · 6자리 코드로 참가할 수 있습니다.');}catch(e){host=false;toast(e.type==='unavailable-id'?'방 코드 충돌입니다. 다시 방을 만들어 주세요.':'방 생성 실패: '+e.message);status('연결 실패 · '+(e.message||e.type||'인터넷 연결을 확인하세요.'));}finally{$('create').dataset.busy='0';$('create').textContent='비공개 방 만들기';$('createPublic').disabled=false;$('create').disabled=false;}}
+$('create').onclick=()=>createRoom(false);
+$('createPublic').onclick=()=>createRoom(true);
+function hostReceive(conn,d){if(!d||typeof d!=='object')return;if(d.type==='hello'){if(started){conn.send({type:'error',message:'게임이 이미 시작되어 참가할 수 없습니다.'});conn.close();return;}if(players.length>=8){conn.send({type:'error',message:'방이 가득 찼습니다.'});conn.close();return;}if(players.some(p=>p.peer===conn.peer))return;const p={id:String(d.clientId||('p-'+Math.random().toString(36).slice(2,10))).slice(0,40),nick:String(d.nick||'플레이어').slice(0,16),peer:conn.peer};players.push(p);hands[p.id]=drawHand();conn.send({type:'welcome',room,players,started:false});broadcast({type:'roster',players,turnId});updateWaiting();}
+if(d.type==='play'&&started){const p=players.find(x=>x.peer===conn.peer);if(!p||p.id!==turnId)return;processPlay(p.id,d.cardId);}}
+function processPlay(from,cardId){if(soloMode){soloPlay(from,cardId);return;}if(!started||from!==turnId)return;const h=hands[from]||[];const index=h.findIndex(c=>c.id===cardId);if(index<0)return;const card=h.splice(index,1)[0];const replacement=shuffle(deck.filter(c=>!h.some(x=>x.id===c.id)))[0]||deck[Math.floor(Math.random()*deck.length)];h.push(replacement);hands[from]=h;const message={type:'message',from,label:card.label,text:card.text};broadcast(message);addMessage(message);const currentIndex=players.findIndex(p=>p.id===from);turnId=players[(currentIndex+1)%players.length]?.id||from;broadcast({type:'turn',turnId});if(from===uid){hand=h;selected=-1;render()}else directToPlayer(from,{type:'privateHand',hand:h});render();if(soloMode&&turnId!==uid)scheduleAiTurn();}
+function scheduleAiTurn(){if(!soloMode||!started||turnId===uid)return;clearTimeout(aiTimer);aiTimer=setTimeout(()=>{if(!soloMode||!started||turnId===uid)return;const bot=players.find(p=>p.id===turnId);const botHand=hands[turnId]||[];if(!bot||!botHand.length)return;const chosen=botHand[Math.floor(Math.random()*botHand.length)];processPlay(bot.id,chosen.id);},1100+Math.random()*1300);}
+function startSolo(){nick=$('nick').value.trim()||'나';uid='solo-human';host=false;soloMode=true;isPublic=false;room='혼자 플레이';peer=null;hostConn=null;connections.clear();players=[{id:uid,nick,host:true},{id:'ai-1',nick:'전애인.exe',ai:true},{id:'ai-2',nick:'단톡유출범',ai:true},{id:'ai-3',nick:'양심리스',ai:true}];hands={};players.forEach(p=>hands[p.id]=drawHand());hand=hands[uid];started=true;turnId=uid;selected=-1;$('chat').innerHTML='<div class="system">AI와 함께하는 혼자 플레이 · 4명이 같은 단체 톡방에서 대화합니다.</div>';$('tabs').classList.remove('hide');$('roomTitle').textContent='# SOLO CHAOS';enterGameWithIntro();render();} 
+$('soloStart').onclick=startSolo;
+async function joinRoom(publicRoom=false){const button=publicRoom?$('joinPublic'):$('join');if(button.dataset.busy==='1')return;button.dataset.busy='1';button.textContent='접속 중…';nick=$('nick').value.trim();room=publicRoom?'PUBLIC':$('code').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!nick||(!publicRoom&&room.length!==6)){button.dataset.busy='0';button.textContent=publicRoom?'공개방 바로 입장':'코드로 참가';return toast(publicRoom?'닉네임을 입력하세요.':'닉네임과 6자리 방 코드를 입력하세요.');}host=false;isPublic=publicRoom;uid='p-'+Math.random().toString(36).slice(2,10);try{await makePeer();const targetPeer=publicRoom?'mw-public-room-v1':'mwroom-'+room.toLowerCase();hostConn=peer.connect(targetPeer,{reliable:true});let gotResponse=false;hostConn.on('open',()=>{hostConn.send({type:'hello',nick,clientId:uid});status('방 참가 요청을 전송했습니다.');});hostConn.on('data',d=>{gotResponse=true;handleData(d)});hostConn.on('error',e=>{toast('방 연결 실패: '+(e.message||e.type));status('연결 실패 · '+(e.type||e.message));});hostConn.on('close',()=>{if(!gotResponse)toast('방을 찾지 못했습니다. 방장이 접속 중인지 확인하세요.');else toast('방장 연결이 종료되었습니다.');status('방 연결 종료');});setTimeout(()=>{if(!gotResponse&&hostConn&&!hostConn.open){toast('연결 시간이 초과되었습니다. 코드와 방장 접속 상태를 확인하세요.');}},12000);$('roomTitle').textContent='# '+room;}catch(e){toast('접속 실패: '+(e.message||e.type));status('접속 실패 · '+(e.message||e.type));}finally{button.dataset.busy='0';button.textContent=publicRoom?'공개방 바로 입장':'코드로 참가';}}
+$('join').onclick=()=>joinRoom(false);$('joinPublic').onclick=()=>joinRoom(true);$('code').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)});$('code').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom(false)});
+function handleData(d){if(!d||typeof d!=='object')return;if(d.type==='error'){toast(d.message);return;}if(d.type==='welcome'){players=d.players;room=d.room;updateWaiting();show('waiting');status('방에 연결되었습니다. 방장이 게임을 시작할 때까지 기다리세요.');}if(d.type==='roster'){players=d.players;turnId=d.turnId||turnId;updateWaiting();render();}if(d.type==='gameStart'){players=d.players;started=true;turnId=d.turnId;hand=d.hand||hand;$('tabs').classList.remove('hide');$('roomTitle').textContent='# '+room;enterGameWithIntro();render();addSystem('게임 시작! 모두가 함께 보는 단체 톡방입니다.');}if(d.type==='message')addMessage(d);if(d.type==='turn'){turnId=d.turnId;render();}if(d.type==='privateHand'){hand=d.hand;selected=-1;render();}}
+$('begin').onclick=()=>{if(!host||players.length<2||started)return;started=true;turnId=uid;for(const p of players){if(p.id===uid)continue;directToPlayer(p.id,{type:'gameStart',players,turnId,hand:hands[p.id]});}hand=hands[uid];$('tabs').classList.remove('hide');$('roomTitle').textContent='# '+room;enterGameWithIntro();render();addSystem('게임 시작! 모두가 함께 보는 단체 톡방입니다.');};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-card]');if(!b||b.disabled||!started||turnId!==uid)return;const i=Number(b.dataset.card),card=hand[i];if(!card)return;b.classList.add('playing');setTimeout(()=>{if(soloMode)processPlay(uid,card.id);else if(host)processPlay(uid,card.id);else if(hostConn&&hostConn.open)hostConn.send({type:'play',cardId:card.id});else toast('방장과 연결이 끊겼습니다.');},170);});
+
+$('tabs').onclick=e=>{const b=e.target.closest('[data-screen]');if(!b)return;show(b.dataset.screen);if(b.dataset.screen==='cards')render();};$('toGame1').onclick=$('toGame2').onclick=()=>show('game');
+function leaveRoom(){clearTimeout(aiTimer);soloMode=false;if(peer)peer.destroy();peer=null;hostConn=null;connections.clear();players=[];hand=[];hands={};started=false;turnId='';host=false;isPublic=false;selected=-1;$('tabs').classList.add('hide');$('chat').innerHTML='<div class="system">게임이 시작되면 실제 플레이어의 문자가 표시됩니다.</div>';show('home');status('온라인 연결 준비 완료 · 방 코드로 참가할 수 있습니다.');}
+$('leave').onclick=$('exitWait').onclick=leaveRoom;$('replayTutorial').onclick=openTutorial;
+status('PeerJS 연결 준비 완료 · GitHub Pages HTTPS에서 실행하세요.');
+document.addEventListener('pointerup',e=>{const b=e.target.closest('button');if(!b)return;b.style.transform='scale(.99)';requestAnimationFrame(()=>{b.style.transform='';});},{passive:true});
+</script></div></body></html>
