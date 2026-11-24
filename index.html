@@ -24,187 +24,403 @@ body{margin:0;background:#e9e9ed;color:var(--ink);font-family:system-ui,-apple-s
 .slam-word{font-size:clamp(58px,18vw,108px);font-weight:1000;letter-spacing:-7px;color:#fff;text-shadow:0 5px 0 #d62d24,0 10px 0 #8d1111,0 18px 35px #000b;transform:rotate(-12deg) scale(.2);animation:slamWord .62s cubic-bezier(.12,.8,.2,1) both}
 .slam-word:before,.slam-word:after{content:'✦';position:absolute;font-size:.42em;color:#ffe45e;text-shadow:0 3px 0 #c75a00}.slam-word:before{left:-.65em;top:-.25em}.slam-word:after{right:-.55em;bottom:-.15em}
 @keyframes slamWord{0%{opacity:0;transform:rotate(-12deg) scale(.2)}35%{opacity:1;transform:rotate(-12deg) scale(1.16)}55%{transform:rotate(-8deg) scale(.92)}75%{transform:rotate(-10deg) scale(1.04)}100%{opacity:0;transform:rotate(-10deg) scale(1.12)}}
-@media(max-height:720px){.playarea{max-height:32vh}.hand{max-height:24vh}.card{min-height:112px;padding:9px}.card .copy{font-size:14px}}
+@media(max-height:720px){.playarea{max-height:40vh}.hand{max-height:none}.card{min-height:132px;padding:10px}.card .copy{font-size:14px}}
 @media(prefers-reduced-motion:reduce){.slam-word,.app.slam-shake,.msgrow.incoming-impact .bubble,.hand .card.playing{animation-duration:.01ms!important}}
-.play-hint{font-size:11px;color:var(--muted);text-align:center;padding:4px 0 0}.sendrow,#target,#send,.hint,#cardPage{display:none!important}
+.play-hint{font-size:11px;color:var(--muted);text-align:center;padding:4px 0 0}.sendrow,#target,#send{display:none!important}
 @media(min-width:560px){.hand{grid-template-columns:repeat(3,minmax(0,1fr));max-height:52vh}.card{min-height:175px}}
-</style></head><body class="kakao"><div class="app"><header><div class="logo">문자<em>전쟁</em> ONLINE</div><div class="theme"><button id="kakao">카카오톡</button><button id="insta">인스타 DM</button><button id="dark">다크</button></div></header>
-<section id="home" class="screen active center"><div><span class="pill">실시간 온라인 · 2~8명</span><h1>문자를 보내.<br>관계를 박살 내.</h1><p>모두가 같은 단체 톡방에서 대화합니다. 내 차례에 큰 문자 카드 한 장을 누르면 즉시 전송됩니다.</p></div><div class="panel"><b>방 코드로 함께하기</b><p style="margin-top:7px">비공개 방은 6자리 코드로 참가합니다. 공개방은 누구나 '공개방 바로 입장'으로 들어올 수 있습니다. 공개방은 전 세계 공용 1개이며 방장이 접속 중일 때만 열립니다.</p></div><button class="btn" id="start">온라인 게임 시작</button><button class="btn secondary" id="soloStart">혼자 하기 · AI와 플레이</button><div class="status" id="netStatus">온라인 연결 준비 중…</div></section>
-<section id="setup" class="screen center"><div><span class="pill">PLAYER</span><h1>닉네임을 정하세요.</h1><p>친구에게 표시될 이름입니다.</p></div><input id="nick" class="field" maxlength="16" placeholder="닉네임"><button class="btn" id="soloStart">🤖 AI와 혼자 플레이</button><button class="btn" id="create">비공개 방 만들기</button><button class="btn secondary" id="createPublic">공개방 만들기</button><div class="panel"><label>방 코드로 참가</label><input id="code" class="field" maxlength="6" placeholder="예: A7K2Q9" autocomplete="off" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:8px">코드로 참가</button><button class="btn secondary" id="joinPublic" style="width:100%;margin-top:8px">공개방 바로 입장</button></div><button class="ghost" id="back">뒤로</button></section>
-<section id="waiting" class="screen center"><div><span class="pill">ROOM</span><h1>플레이어를 기다리는 중</h1><p>방 코드를 친구에게 알려주세요. 친구가 코드로 참가하면 여기에 표시됩니다.</p></div><div class="panel"><div style="text-align:center;font-size:11px;color:var(--muted);font-weight:800">친구에게 알려줄 방 코드</div><div class="roomcode" id="roomCode"></div><div id="waitingList" style="margin-top:13px"></div></div><button class="btn" id="begin" disabled>게임 시작하기</button><button class="ghost" id="exitWait">방 나가기</button><div class="status">방장의 브라우저가 켜져 있어야 방이 유지됩니다. PeerJS 공용 시그널링 서비스로 연결을 협상하고, 게임 데이터는 WebRTC P2P로 전달됩니다.</div></section>
-<section id="game" class="screen"><div class="roomtop"><div><b id="roomTitle">ONLINE ROOM</b><div id="turnTitle" style="color:var(--muted);margin-top:3px">플레이어 연결 중</div></div></div><div class="people" id="people"></div><div class="game-main"><div class="chat" id="chat"><div class="system">모두가 함께 보는 단체 대화방입니다.</div></div><div class="playarea"><div class="handhead"><b>내 문자 카드 — 한 장을 눌러 바로 보내기</b><span id="count">5장</span></div><div class="hand" id="hand"></div><div class="play-hint" id="hint">내 차례에 카드 하나를 누르면 단체방에 전송됩니다.</div></div></div></section><div id="dealOverlay" class="deal-overlay hide"><div class="deal-title">카드 배분 중…</div><div class="deal-stack"><div class="deal-card" style="--i:0">문</div><div class="deal-card" style="--i:1">자</div><div class="deal-card" style="--i:2">전</div><div class="deal-card" style="--i:3">쟁</div><div class="deal-card" style="--i:4">!</div></div><div>오늘의 대참사가 시작됩니다.</div></div><div id="tutorial" class="tutorial hide"><div class="tutorial-box"><div class="tutorial-step" id="tStep">HOW TO PLAY · 1 / 3</div><h2 id="tTitle">이 게임은 이렇게 합니다</h2><p id="tBody"></p><div class="tutorial-example" id="tExample"></div><div class="tutorial-actions"><button class="btn secondary" id="tSkip">튜토리얼 건너뛰기</button><button class="btn" id="tNext">다음</button></div></div></div>
+
+.reveal-overlay{position:absolute;inset:60px 0 52px;z-index:40;background:radial-gradient(circle at 50% 15%,#473044,#101016 72%);color:#fff;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}.reveal-shell{width:100%;max-width:470px;text-align:center}.reveal-kicker{font-size:10px;letter-spacing:3px;font-weight:1000;color:#ffcf57}.reveal-count{font-size:12px;color:#c4b9c8;margin-top:12px}.reveal-shell h2{font-size:30px;font-weight:1000;margin:8px 0 4px}.reveal-names{font-size:12px;color:#c9c0ce;margin-bottom:24px}.reveal-bubbles{display:flex;flex-direction:column;gap:15px;min-height:190px;justify-content:center}.reveal-bubble{max-width:86%;padding:16px 18px;border-radius:20px;text-align:left;font-size:19px;line-height:1.35;font-weight:900;color:#211d23;background:#fff;box-shadow:0 10px 25px #0005;opacity:0;animation:revealIn .62s cubic-bezier(.16,.9,.25,1) forwards}.reveal-bubble.right{align-self:flex-end;background:linear-gradient(130deg,#ffdf54,#ffc928)}.reveal-bubble.left{align-self:flex-start}.reveal-bubble small{display:block;font-size:10px;opacity:.58;margin-bottom:7px}.reveal-bubble:nth-child(2){animation-delay:.7s}.reveal-punch{height:52px;margin:14px 0;color:#ffdf58;font-size:30px;font-weight:1000;text-shadow:0 4px 0 #9e2626;opacity:0}.reveal-punch.pop{animation:punchPop .6s ease-out forwards}.reveal-next{width:100%;margin-top:6px;background:#ffdc4a;color:#211d23}.reveal-overlay.finished .reveal-shell{animation:finishReveal .55s ease both}@keyframes revealIn{0%{opacity:0;transform:translateY(35px) scale(.78) rotate(-3deg)}70%{opacity:1;transform:translateY(-4px) scale(1.04)}100%{opacity:1;transform:none}}@keyframes punchPop{0%{opacity:0;transform:scale(.2) rotate(-12deg)}45%{opacity:1;transform:scale(1.2) rotate(5deg)}100%{opacity:1;transform:scale(1) rotate(-4deg)}}@keyframes finishReveal{to{transform:scale(.96);opacity:.85}}
+.playarea.waiting .hand{opacity:.25;pointer-events:none}.pair-status{font-size:12px;color:var(--muted);text-align:center;padding:8px}.card .copy{font-size:clamp(15px,4vw,19px)}
+
+/* Character creator: illustrated avatars, never emoji */
+.character-maker{width:100%;text-align:center}.maker-head{display:flex;justify-content:space-between;align-items:center;font-size:13px}.maker-head span{font-size:10px;color:var(--muted)}.avatar-preview{width:142px;height:150px;margin:12px auto 14px;border-radius:24px;background:linear-gradient(145deg,#fff,#ece8e2);display:grid;place-items:center;box-shadow:inset 0 -7px 0 #0001,0 9px 20px #0002;animation:avatarFloat 2.2s ease-in-out infinite;overflow:hidden}.avatar-preview svg{width:132px;height:144px;overflow:visible}.character-options{text-align:left}.character-options label{margin:9px 0 5px}.character-options select{padding:10px}.color-row{display:flex;align-items:center;justify-content:space-between;margin-top:12px}.color-row label{margin:0}.color-row input{width:48px;height:32px;border:0;background:transparent}.player-avatar{display:inline-grid;place-items:center;width:35px;height:35px;border-radius:11px;margin-right:5px;vertical-align:middle;background:#f0ece6;overflow:hidden}.player-avatar svg{width:34px;height:36px}.msg-avatar{width:38px;height:40px;flex:none;border-radius:12px;display:grid;place-items:center;background:#f0ece6;overflow:hidden;align-self:flex-end;animation:avatarPop .35s cubic-bezier(.2,.9,.2,1)}.msg-avatar svg{width:38px;height:40px}.msgrow.mine .msg-avatar{order:2}.result-screen{position:relative;overflow:hidden;text-align:center}.result-avatars{display:flex;justify-content:center;gap:22px;margin:14px 0 20px;flex-wrap:wrap}.result-character{width:118px;height:145px;border-radius:28px;background:linear-gradient(145deg,#fff,#eee8df);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 -8px 0 #0001,0 12px 22px #0002;animation:resultEntrance .8s cubic-bezier(.16,1,.3,1) both}.result-character svg{width:112px;height:140px}.result-character:nth-child(2){animation-delay:.18s}.result-character.celebrate{animation:resultEntrance .8s cubic-bezier(.16,1,.3,1) both,winnerDance 1s ease-in-out .8s 2}.result-stats{width:100%;text-align:left;line-height:1.8;font-size:13px}.result-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%}.result-confetti{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,#f6c945 2px,transparent 3px),radial-gradient(circle,#d85b9d 2px,transparent 3px),radial-gradient(circle,#6b9ee8 2px,transparent 3px);background-size:55px 70px,75px 90px,95px 65px;background-position:0 -100%,30px -120%,60px -90%;animation:confettiFall 3.2s linear infinite;opacity:.65}.result-screen>*:not(.result-confetti){position:relative;z-index:1}@keyframes avatarFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}@keyframes avatarPop{0%{transform:scale(.3) rotate(-20deg);opacity:0}75%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}@keyframes resultEntrance{0%{transform:translateY(70px) scale(.3) rotate(-18deg);opacity:0}70%{transform:translateY(-10px) scale(1.08) rotate(5deg);opacity:1}100%{transform:translateY(0) scale(1) rotate(0)}}@keyframes winnerDance{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-13px) rotate(-8deg)}50%{transform:translateY(0) rotate(8deg)}75%{transform:translateY(-8px) rotate(-4deg)}}@keyframes confettiFall{0%{background-position:0 -100%,30px -120%,60px -90%}100%{background-position:0 120%,30px 130%,60px 115%}}
+/* Character creator: fit the phone viewport; keep every control reachable. */
+.app{min-height:0;height:100dvh}
+#setup{justify-content:flex-start;align-items:stretch;gap:9px;padding:12px 14px 22px;overflow-y:auto;overscroll-behavior:contain}
+#setup h1{font-size:26px;margin:4px 0}
+#setup .character-maker{padding:11px;flex:none}
+#setup .avatar-preview{height:118px;width:124px;margin:7px auto 9px}
+#setup .avatar-preview svg{width:112px;height:116px}
+#setup .character-options{display:grid;grid-template-columns:1fr 1.35fr;gap:5px 9px;align-items:center}
+#setup .character-options label{margin:4px 0;font-size:11px}
+#setup .character-options select{padding:9px;min-height:36px}
+#setup .color-row{grid-column:1/-1;margin-top:3px}
+#setup .field{flex:none}
+@media(max-height:740px){#setup{padding-top:8px;gap:7px}#setup .avatar-preview{height:100px;margin:4px auto 6px}#setup .avatar-preview svg{height:100px}#setup .character-maker{padding:9px}}
+/* Keep the five dealt message cards visible and unmistakably playable. */
+#hand.hand{display:flex!important;flex-wrap:nowrap;gap:10px;overflow-x:auto;overflow-y:hidden;max-height:none;padding:5px 3px 15px;scroll-snap-type:x mandatory}.playarea{max-height:38vh;overflow:visible}.card{display:flex!important;flex:0 0 min(72%,230px);min-width:min(72%,230px);min-height:clamp(142px,20vh,176px);scroll-snap-align:center;border:2px solid #d2c7b7;background:linear-gradient(150deg,#fffefb,#eee6d8);box-shadow:0 5px 0 #c9bdab,0 9px 17px #0002}.card .copy{font-size:clamp(14px,3.8vw,18px)}.card.selected{outline:3px solid var(--accent);transform:translateY(-5px)}
+
+/* Setup remains fully scrollable on short mobile viewports. */
+#setup{justify-content:flex-start!important;overflow-y:auto!important;min-height:0;padding-top:16px;padding-bottom:calc(28px + env(safe-area-inset-bottom));}
+#setup .character-maker{width:100%;max-width:100%;}
+#setup .avatar-preview{max-width:100%;}
+.solo-result{margin:18px 0 8px;text-align:center;color:var(--ink);animation:resultRise .55s ease both;}
+.solo-result .result-kicker{font-size:10px;font-weight:1000;letter-spacing:2px;color:var(--muted);margin-bottom:8px;}
+.solo-result .result-characters{display:flex;justify-content:center;gap:22px;margin:12px 0;}
+.solo-result .result-character{width:90px;height:120px;animation:celebrate 1.1s ease-in-out infinite alternate;}
+.solo-result .result-character svg{width:100%;height:100%;}
+.solo-result .result-caption{font-size:12px;font-weight:900;margin:8px 0 14px;}
+@keyframes resultRise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+
+/* V7 visual/audio pass: larger game characters, readable result, animated presentation */
+#soundToggle{white-space:nowrap;background:#211d2b;color:#fff;border:0;border-radius:9px;padding:8px 10px;font-size:10px;font-weight:900}
+.avatar-preview{width:190px;height:198px;border-radius:30px;background:radial-gradient(circle at 50% 24%,#fff 0,#f6e9f0 58%,#e7dce7 100%);box-shadow:inset 0 -8px 0 #b8a7b522,0 12px 26px #30223822}
+.avatar-preview svg{width:178px;height:194px;filter:drop-shadow(0 5px 4px #29202a22)}
+.player-avatar{width:43px;height:45px;border-radius:13px;background:linear-gradient(145deg,#fff,#e9e1eb);box-shadow:0 2px 6px #0002}
+.player-avatar svg{width:43px;height:46px}
+.msg-avatar{width:48px;height:50px;border-radius:15px;background:linear-gradient(145deg,#fff,#e9e1eb);box-shadow:0 3px 9px #0002}
+.msg-avatar svg{width:48px;height:50px}
+.solo-finished .playarea{display:none!important}
+.solo-finished .game-main{min-height:0}
+.solo-finished .chat{padding:16px 12px 26px;gap:13px;overflow-y:auto;scroll-behavior:smooth}
+.solo-result{width:100%;flex:none;padding:20px 14px 18px!important;margin:10px 0 8px!important;border-radius:23px!important;background:linear-gradient(150deg,#fffdf8,#f3eaf5)!important;border:2px solid #fff!important;box-shadow:0 12px 30px #21152b26!important;animation:resultCardIn .65s cubic-bezier(.16,1,.3,1) both!important}
+.solo-result .result-kicker{font-size:12px!important;letter-spacing:3px!important;color:#9564a8!important;margin-bottom:8px!important}
+.solo-result>b{font-size:clamp(19px,5vw,25px);font-weight:1000;letter-spacing:-.7px;color:#26202c}
+.solo-result .result-characters{display:flex;align-items:center;justify-content:center;gap:clamp(7px,3vw,20px);margin:20px 0 13px!important}
+.solo-result .result-character{position:relative;width:clamp(112px,34vw,158px)!important;height:clamp(142px,42vw,190px)!important;flex:none;border-radius:25px!important;background:radial-gradient(circle at 50% 20%,#fff 0,#f4e6ef 65%,#e4d8e8 100%)!important;box-shadow:0 9px 0 #cfc0d0,0 15px 25px #34233c22!important;overflow:hidden}
+.solo-result .result-character svg{width:100%!important;height:100%!important;filter:drop-shadow(0 4px 3px #24182b22)}
+.solo-result .result-character i{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);font-style:normal;font-size:9px;font-weight:1000;letter-spacing:2px;color:#6c566f;background:#ffffffc9;padding:4px 10px;border-radius:20px}
+.solo-result .result-vs{font-size:19px;font-weight:1000;color:#d34d7b;text-shadow:0 2px #fff;flex:none}
+.solo-result .result-caption{font-size:14px!important;font-weight:1000;margin:9px 0 17px!important;color:#3a3040}
+.solo-result #soloReplay{width:100%;font-size:16px;padding:16px;border-radius:15px;background:linear-gradient(100deg,#ffdf55,#ffb94d);color:#29202a;box-shadow:0 4px 0 #d99a39}
+@keyframes resultCardIn{0%{opacity:0;transform:translateY(35px) scale(.9)}65%{opacity:1;transform:translateY(-5px) scale(1.015)}100%{transform:none}}
+@keyframes celebrate{0%{transform:translateY(0) rotate(-2deg)}25%{transform:translateY(-13px) rotate(2deg)}50%{transform:translateY(-3px) rotate(-1deg)}75%{transform:translateY(-10px) rotate(2deg)}100%{transform:translateY(0) rotate(0)}}
+.solo-result .result-character:nth-child(1){animation:characterEntrance .7s cubic-bezier(.16,1,.3,1) both,celebrate 1.25s ease-in-out .75s infinite!important}
+.solo-result .result-character:nth-child(3){animation:characterEntrance .7s .18s cubic-bezier(.16,1,.3,1) both,celebrate 1.25s ease-in-out .93s infinite!important}
+@keyframes characterEntrance{0%{opacity:0;transform:translateY(90px) scale(.35) rotate(-15deg)}65%{opacity:1;transform:translateY(-12px) scale(1.08) rotate(4deg)}100%{opacity:1;transform:none}}
+@media(max-height:760px){.solo-finished .chat{padding-top:9px}.solo-result{padding:13px 10px!important;margin:5px 0!important}.solo-result .result-characters{margin:10px 0!important}.solo-result .result-character{height:clamp(105px,29vh,150px)!important;width:clamp(90px,27vw,130px)!important}}
+@media(max-width:380px){.solo-result .result-characters{gap:5px}.solo-result .result-character{width:29vw!important;height:35vw!important}.solo-result .result-vs{font-size:15px}}
+
+
+/* V8: complete mascot redraw, reaction choreography, fit-to-screen result, audible BGM */
+#soundToggle{font-size:11px!important;min-width:84px}
+.avatar-preview{width:210px!important;height:218px!important}
+.avatar-preview svg{width:198px!important;height:210px!important}
+.player-avatar svg,.msg-avatar svg{width:100%!important;height:100%!important}
+.solo-finished .chat{padding:7px 9px 10px!important;gap:7px!important;overflow-y:auto!important}
+.solo-finished .msgrow{gap:5px!important}
+.solo-finished .msg-avatar{width:38px!important;height:40px!important;border-radius:12px!important}
+.solo-finished .bubble{font-size:13px!important;padding:9px 12px!important;line-height:1.35!important}
+.solo-finished .who{font-size:9px!important;margin-bottom:2px!important}
+.solo-finished .system{font-size:9px!important;padding:4px 8px!important}
+.solo-result{width:100%!important;min-height:0!important;flex:0 0 auto!important;padding:10px 10px 11px!important;margin:3px 0 0!important;border-radius:19px!important;background:linear-gradient(145deg,#fffdf8 0%,#f6e8f0 55%,#e8edf9 100%)!important;box-shadow:0 7px 22px #21152b20!important}
+.solo-result .result-kicker{font-size:10px!important;letter-spacing:2px!important;margin-bottom:3px!important}
+.solo-result>b{display:block;font-size:clamp(17px,4.5vw,22px)!important;line-height:1.2!important}
+.reaction-stage{display:flex;align-items:center;justify-content:center;gap:clamp(5px,2vw,15px);width:100%;margin:8px auto 5px}
+.reaction-unit{width:39%;min-width:0;display:flex;flex-direction:column;align-items:center;position:relative}
+.reaction-unit .result-character{width:100%!important;height:clamp(108px,20vh,148px)!important;max-width:142px!important;border-radius:20px!important;background:linear-gradient(145deg,#fff,#e9e1ed)!important;box-shadow:0 5px 0 #cfc0d0,0 8px 16px #34233c1c!important;overflow:visible!important;display:grid;place-items:center}
+.reaction-unit .result-character svg{width:100%!important;height:100%!important;overflow:visible}
+.reaction-line{font-size:10px;font-weight:1000;color:#6e5579;background:#fff;border:1px solid #e8dbea;border-radius:20px;padding:4px 8px;margin-bottom:4px;white-space:nowrap}
+.reaction-name{font-size:11px;font-weight:1000;margin-top:8px;color:#302839;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reaction-impact{font-size:27px;font-weight:1000;color:#d44e79;animation:impactPulse .6s ease-in-out infinite alternate;flex:none}
+.player-reaction .result-character{animation:playerCelebrate .72s ease-in-out .1s 3 both!important}
+.ai-reaction .result-character{animation:aiStagger .82s ease-in-out .25s 2 both!important}
+.player-reaction .result-character svg{animation:playerLean .72s ease-in-out .1s 3 both;transform-origin:50% 80%}
+.ai-reaction .result-character svg{animation:aiFlinch .82s ease-in-out .25s 2 both;transform-origin:50% 85%}
+.result-caption{font-size:10px!important;line-height:1.35!important;margin:5px 0 8px!important;color:#51465a!important}
+.solo-result #soloReplay{padding:10px 12px!important;font-size:13px!important;border-radius:12px!important}
+@keyframes playerCelebrate{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-15px) rotate(-8deg)}55%{transform:translateY(1px) rotate(3deg)}78%{transform:translateY(-9px) rotate(-3deg)}}
+@keyframes playerLean{0%,100%{transform:rotate(0)}35%{transform:rotate(-5deg)}70%{transform:rotate(3deg)}}
+@keyframes aiStagger{0%,100%{transform:translateX(0) rotate(0)}20%{transform:translateX(8px) rotate(8deg)}42%{transform:translateX(-5px) rotate(-7deg)}65%{transform:translateY(5px) rotate(4deg)}}
+@keyframes aiFlinch{0%,100%{transform:scale(1)}30%{transform:scale(.94) rotate(5deg)}60%{transform:scale(1.03) rotate(-3deg)}}
+@keyframes impactPulse{from{transform:scale(.85) rotate(-8deg)}to{transform:scale(1.2) rotate(8deg)}}
+@media(max-height:760px){
+ .solo-finished .chat{gap:5px!important;padding:5px 8px 7px!important}
+ .solo-finished .msg-avatar{width:32px!important;height:34px!important}
+ .solo-finished .bubble{font-size:12px!important;padding:7px 10px!important}
+ .solo-result{padding:7px 8px!important}
+ .reaction-unit .result-character{height:clamp(88px,17vh,120px)!important}
+ .reaction-line{font-size:9px;padding:3px 6px}
+ .result-caption{margin:3px 0 5px!important}
+ .solo-result #soloReplay{padding:8px!important}
+}
+
+
+/* Character system removed: keep the game focused on names, cards and chat. */
+.character-maker,.avatar-preview,.avatar-preview svg,.player-avatar,.msg-avatar,.result-avatars,.reaction-stage,.result-character{display:none!important}
+#setup{gap:14px}
+</style></head><body class="kakao"><div class="app"><header><div class="logo">문자<em>전쟁</em> ONLINE</div><div class="theme"><button id="kakao">카카오톡</button><button id="insta">인스타 DM</button><button id="dark">다크</button><button id="soundToggle" aria-label="배경음악과 효과음 켜기/끄기">♫ 사운드 ON</button></div></header>
+<section id="home" class="screen active center"><div><span class="pill">실시간 온라인 · 2~8명 · 짝수 인원</span><h1>문자를 보내.<br>관계를 박살 내.</h1><p>두 사람이 각자 카드 한 장씩 내서 문자 대화를 완성합니다. 모든 대화는 마지막에 하나씩 전체 공개됩니다.</p></div><div class="panel"><b>방 코드로 함께하기</b><p style="margin-top:7px">비공개 방은 6자리 코드로 참가합니다. 공개방은 누구나 '공개방 바로 입장'으로 들어올 수 있습니다. 공개방은 전 세계 공용 1개이며 방장이 접속 중일 때만 열립니다.</p></div><button class="btn" id="start">온라인 게임 시작</button><button class="btn secondary" id="soloQuick">혼자 하기 · AI와 플레이</button><div class="status" id="netStatus">온라인 연결 준비 중…</div></section>
+<section id="setup" class="screen center"><div><span class="pill">PLAYER</span><h1>닉네임을 정하세요.</h1><p>친구에게 표시될 이름입니다.</p></div><input id="nick" class="field" maxlength="16" placeholder="플레이어 닉네임">
+
+<button class="btn" id="soloStart">🤖 AI와 혼자 플레이</button><button class="btn" id="create">비공개 방 만들기</button><button class="btn secondary" id="createPublic">공개방 만들기</button><div class="panel"><label>방 코드로 참가</label><input id="code" class="field" maxlength="6" placeholder="예: A7K2Q9" autocomplete="off" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:8px">코드로 참가</button><button class="btn secondary" id="joinPublic" style="width:100%;margin-top:8px">공개방 바로 입장</button></div><button class="ghost" id="back">뒤로</button></section>
+<section id="waiting" class="screen center"><div><span class="pill">ROOM</span><h1>플레이어를 기다리는 중</h1><p>방 코드를 친구에게 알려주세요. 친구가 코드로 참가하면 여기에 표시됩니다. 1대1 대화를 위해 짝수 인원이 필요합니다.</p></div><div class="panel"><div style="text-align:center;font-size:11px;color:var(--muted);font-weight:800">친구에게 알려줄 방 코드</div><div class="roomcode" id="roomCode"></div><div id="waitingList" style="margin-top:13px"></div></div><button class="btn" id="begin" disabled>게임 시작하기</button><button class="ghost" id="exitWait">방 나가기</button><div class="status">방장의 브라우저가 켜져 있어야 방이 유지됩니다. PeerJS 공용 시그널링 서비스로 연결을 협상하고, 게임 데이터는 WebRTC P2P로 전달됩니다.</div></section>
+<section id="game" class="screen"><div class="roomtop"><div><b id="roomTitle">ONLINE ROOM</b><div id="turnTitle" style="color:var(--muted);margin-top:3px">플레이어 연결 중</div></div></div><div class="people" id="people"></div><div class="game-main"><div class="chat" id="chat"><div class="system">1대1 문자 대화를 완성하고 있습니다.</div></div><div class="playarea"><div class="handhead"><b>내 문자 카드 — 딱 한 장만 선택</b><span id="count">5장</span></div><div class="hand" id="hand"></div><div class="play-hint" id="hint">상대와 함께 대화를 완성할 카드 한 장을 선택하세요.</div></div></div></section><div id="dealOverlay" class="deal-overlay hide"><div class="deal-title">카드 배분 중…</div><div class="deal-stack"><div class="deal-card" style="--i:0">문</div><div class="deal-card" style="--i:1">자</div><div class="deal-card" style="--i:2">전</div><div class="deal-card" style="--i:3">쟁</div><div class="deal-card" style="--i:4">!</div></div><div>오늘의 대참사가 시작됩니다.</div></div><div id="tutorial" class="tutorial hide"><div class="tutorial-box"><div class="tutorial-step" id="tStep">HOW TO PLAY · 1 / 3</div><h2 id="tTitle">이 게임은 이렇게 합니다</h2><p id="tBody"></p><div class="tutorial-example" id="tExample"></div><div class="tutorial-actions"><button class="btn secondary" id="tSkip">튜토리얼 건너뛰기</button><button class="btn" id="tNext">다음</button></div></div></div>
 <section id="players" class="screen center"><h1>참가자</h1><div class="panel" id="playerList"></div><button class="btn secondary" id="toGame1">채팅으로</button></section><section id="cards" class="screen center"><h1>내 손패</h1><p>게임 화면의 큰 카드를 누르면 단체방에 바로 전송됩니다.</p><div class="hand" id="cardPage" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div><button class="btn secondary" id="toGame2">채팅으로</button></section><section id="settings" class="screen center"><h1>설정</h1><div class="panel"><p>게임 설명을 다시 볼 수 있습니다.</p><button class="btn secondary" id="replayTutorial" style="width:100%;margin-top:10px">튜토리얼 다시 보기</button><p style="margin-top:14px">방을 나가면 현재 게임 연결이 종료됩니다.</p><button class="btn secondary" id="leave" style="width:100%;margin-top:12px">방 나가기</button></div></section>
-<footer id="tabs" class="hide"><button data-screen="game" class="active">▣<br>채팅</button><button data-screen="players">♙<br>플레이어</button><button data-screen="settings">⚙<br>설정</button></footer><div class="toast" id="toast"></div></div>
+<section id="result" class="screen center result-screen"><div class="result-confetti" aria-hidden="true"></div><span class="pill">MATCH COMPLETE</span><h1 id="resultTitle">오늘의 대참사 종료!</h1><div class="result-avatars" id="resultAvatars"></div><div class="result-stats panel" id="resultStats"></div><div class="result-actions"><button class="btn" id="playAgain">한 판 더 하기</button><button class="btn secondary" id="resultHome">메인으로</button></div></section><footer id="tabs" class="hide"><button data-screen="game" class="active">▣<br>채팅</button><button data-screen="players">♙<br>플레이어</button><button data-screen="settings">⚙<br>설정</button></footer><div id="revealOverlay" class="reveal-overlay hide"><div class="reveal-shell"><div class="reveal-kicker">THE RECEIPTS ARE IN</div><div id="revealCount" class="reveal-count">1 / 1</div><h2 id="revealTitle">대화 공개</h2><div id="revealPairNames" class="reveal-names"></div><div id="revealBubbles" class="reveal-bubbles"></div><div id="revealPunch" class="reveal-punch"></div><button id="revealNext" class="btn reveal-next">다음 대화 공개</button></div></div><div class="toast" id="toast"></div></div>
 <script>
-/* 문자전쟁 P2P 멀티플레이: 방장 Peer가 중계 노드, 게임 데이터는 WebRTC DataChannel로 전달 */
+/* 문자전쟁: 1대1로 각자 카드 한 장을 내고, 모든 대화를 순서대로 공개 */
 const $=id=>document.getElementById(id);
-let peer=null,hostConn=null,connections=new Map(),room='',nick='',uid='',host=false,isPublic=false,soloMode=false,aiTimer=null;
-let players=[],hand=[],hands={},selected=-1,turnId='',started=false,roomPeerId='';
-const deck=[
-['긴급 공지','너희 둘 바람피운 거 나만 몰랐대. 그래서 지금부터 나도 모르는 척 안 할게.'],
-['단톡방 폭사','아 실수로 여기 올렸네. 근데 어차피 당사자 다 있잖아?'],
-['환승역','너 환승한 거 아니야. 내 차에서 걔 차로 갈아탄 거지.'],
-['읽씹의 이유','답장 안 한 게 아니라 답장할 가치가 없어서 회의 중이었어.'],
-['양다리 인증','둘한테 보낸 굿나잇 문자 시간이 똑같네. 복붙도 성의껏 해라.'],
-['전 애인 배송','네가 두고 간 옷 택배로 보냈어. 착불이고 수치심은 동봉 안 됨.'],
-['모텔 체크아웃','어제 모텔에서 봤어. 걱정 마, 너보다 네 애인이 더 놀라더라.'],
-['엄마가 아셔','네 어머니가 나한테 김장 오라시는데, 새 애인도 데려갈까?'],
-['결혼식 생중계','신랑 입장할 때 내가 영상 틀어도 돼? 우리 추억이 꽤 길던데.'],
-['부계정 참사','부계로 내 스토리 보다가 본계로 좋아요 눌렀더라. 손가락도 환승했냐?'],
-['새벽의 실수','술 취해서 네 이름 불렀어. 네 애인 옆에서. 마이크 켜진 줄 몰랐지.'],
-['계좌번호','사랑은 끝났고 네가 빌려 간 48만 원은 아직 진행 중이야.'],
-['증거 폴더','폴더 이름은 네 이름이야. 사진 날짜순으로 정리해 놨어. 고맙지?'],
-['공개 연애','비밀 연애라며? 네 애인이 내 게시물에 “언니”라고 댓글 달았는데.'],
-['친구비 환불','너랑 친구한 기간 계산해 봤어. 시간당 최저임금으로 청구할게.'],
-['네 편은 없어','다들 네 편인 척한 거야. 단톡방 나가고 나서 진짜 회의 시작했거든.'],
-['잘못 보낸 사진','사진 잘못 보냈다. 네 애인한테 보내려던 건데 너도 알아야 할 것 같아서.'],
-['동시 고백','너한테 고백한 날 네 친구한테도 고백했어. 둘 다 차일 줄은 몰랐지.'],
-['이중 예약','오늘 나랑 데이트라며. 네 위치 공유에는 다른 집 주소가 뜨는데?'],
-['프사 교체','네가 찍어준 사진 내렸어. 사진 속 네 손만 잘라서 새 프사로 썼어.'],
-['장례식 분위기','다들 조용히 해. 방금 신부 측에서 신랑 전 애인 명단을 보내왔어.'],
-['단체 사과','사과는 한 명씩 하지 마. 여기 관련자 6명 다 있으니까 한 번에 해.'],
-['네가 바람이야','내가 바람핀 게 아니라 네가 이미 전 애인이었어. 통보만 늦었지.'],
-['비밀번호 공유','네 폰 비번 아직 내 생일이네. 새 애인한테도 내 생일 외우라 그래.'],
-['택시비 정산','그날 네 애인 집까지 태워다 준 택시비 보내. 나 대리운전 아니야.'],
-['소개팅 대참사','소개팅 상대가 네 전 애인이더라. 시작 전에 서로 추모부터 했어.'],
-['가족 단톡 입장','이 얘기 가족 단톡에 올릴까? 네 아버지도 등장인물이라서.'],
-['임시 저장','네가 보낸 변명 세 개 다 저장했어. 다음엔 새 버전으로 부탁해.'],
-['하트의 의미','내 사진에 하트 누른 거 네 애인 계정으로도 봤어. 손가락이 바쁘네.'],
-['공동 친구','우리 공통 친구 12명한테 물어봤어. 다들 네가 먼저랬어.'],
-['현장 검거','문 열어. 너 지금 내 집 비밀번호 누르고 있잖아. CCTV도 보고 있어.'],
-['이별 회식','우리 이별 기념 회식하자. 참석자는 네 전 애인들로만 구성했어.'],
-['청첩장 반송','청첩장 잘 받았어. 축하금 대신 네가 나한테 한 거짓말 목록 보낼게.'],
-['카톡 프로필','프로필 뮤직 바꿨네. 가사 보내지 말고 미납금부터 보내.'],
-['연락 금지','연락하지 말라며? 그래서 네 친구한테 연락했어. 걔는 답장 빠르더라.'],
-['술자리 폭로','어제 네가 한 말 녹음됐어. 네가 제일 싫어하는 사람도 들었고.'],
-['대리 연애','네 애인한테 네 대신 답장해 줬어. 너보다 말이 잘 통하더라.'],
-['가짜 바쁨','바쁘다더니 스토리는 17개 올렸네. 손가락만 야근했나 봐.'],
-['전 애인 동맹','너희 전 애인들끼리 단톡 만들었어. 방 이름은 “생존자 모임”이야.'],
-['결제 내역','네 카드로 결제된 커플링 봤어. 사이즈가 내 것도 아니고 네 것도 아니네?'],
-['비밀 유지비','네 비밀 지켜준 값 아직 안 들어왔어. 오늘부터 무료 서비스 종료야.'],
-['네 물건','네 짐 문 앞에 뒀어. 비밀번호는 바꿨고 추억은 종량제 봉투에 넣었어.'],
-['연애 경력','네가 나한테는 첫사랑이라며. 네 친구는 네가 자기한테도 그랬대.'],
-['실시간 위치','위치 공유 꺼. 네가 어디 있는지보다 누구랑 있는지가 더 잘 보이거든.'],
-['축하 메시지','임신 축하해. 근데 아빠 후보가 셋이라 단톡 투표부터 열어야겠어.'],
-['공개 저격','스토리 내리기 전에 캡처했어. 태그할까, 실명으로 갈까?'],
-['읽음 1 표시','읽음 1인데 답이 없네. 나머지 7명은 이미 너 욕하는 중이야.'],
-['친구의 남친','네 남친이 나한테 상담하더라. 너랑 헤어질지 나랑 만날지.'],
-['최악의 변명','폰 배터리가 없었다며. 네 스토리 업로드는 무선 충전이었나 봐.'],
-['이중생활','낮에는 모범생, 밤에는 네 애인. 직업이 두 개면 세금도 두 배 내.'],
-['단톡 퇴장','나 나갈게. 여기서 제일 정상인 사람이 나라는 게 더 무서워.'],
-['상견례 참사','상견례 날짜 잡았어? 나도 갈게. 양가에 설명할 게 좀 있거든.'],
-['사과문 반려','사과문 반려야. 피해자 이름을 네 이름으로 쓴 것부터 틀렸어.'],
-['공용 비밀','우리 셋만 아는 비밀이라며. 지금 여기 열한 명이 알고 있는데?'],
-['헤어진 이유','우리가 헤어진 이유 기억나? 네가 내 친구랑 결혼 준비 중이었잖아.'],
-['커플 사진','커플 사진에서 내 얼굴만 지웠네. 원본은 이미 친구들한테 보냈어.'],
-['선물 회수','네가 준 목걸이 돌려줄게. 대신 네가 내놓은 자존심도 챙겨가.'],
-['대화 백업','대화 백업 완료. 네가 부인할 때마다 날짜와 시간을 읽어줄게.'],
-['새 애인 환영','새 애인 축하해. 나한테 물어보면 네 사용 설명서 보내줄게. 주의사항 많아.'],
-['마지막 경고','오늘 안에 정리해. 내일은 내가 아니라 단톡방 전체가 움직일 거야.'],
-['누가 누구를','너 나한테 환승했다고? 난 이미 네 친구랑 갈아탄 지 한 달인데.'],
-['카드값 폭탄','데이트 비용 반반 하자며. 네가 바람핀 날의 호텔비도 반반이야?'],
-['스토리 목격자','스토리 배경에 내 집 커튼 보이더라. 아직도 거기서 뭐 하는데?'],
-['가족의 선택','우리 엄마가 네 편이래. 나도 이제 엄마랑 손절해야 하나 봐.'],
-['최종 폭로','이제 다 말할게. 너희 둘 다 나한테 같은 거짓말을 했거든.'],
-['퇴장 선언','이 방에서 나가는 건 나지만, 캡처본은 이미 모두에게 갔어.'],
-['알림 폭주','잠깐만. 네 애인, 네 전 애인, 네 엄마가 동시에 나한테 전화 중이야.'],
-['현타 완료','너랑 다시 시작하느니 약관 80페이지를 처음부터 읽을래.'],
-['막장 엔딩','다들 진정해. 방금 신랑이 신부 말고 나한테 “도망가자” 보냈어.']
-].map((c,i)=>({id:'c'+i,label:c[0],text:c[1]}));
+let peer=null,hostConn=null,connections=new Map(),room='',nick='',uid='',host=false,isPublic=false,soloMode=false;
+let players=[],hand=[],hands={},started=false,roomPeerId='',pairs=[],pairMeta=null,submitted=false,submissions={},revealed=false,revealPairs=[],revealIndex=0;
+let myAvatarColor='#ff6b6b',soloTranscript=[],aiHand=[],usedPlayerCardIds=new Set(),usedAiCardIds=new Set();
+const openers=[
+  '나 사실 네 아빠랑 잤어.',
+  '자기야, 우리 결혼식 날짜 잡혔어.',
+  '어젯밤에 나한테 보낸 사진 뭐야?',
+  '오늘 밤 우리 집에 아무도 없어.',
+  '우리 이제 그만 만나는 게 좋겠어.',
+  '나한테 숨기는 거 없어?',
+  '우리 엄마가 너랑 헤어지래.',
+  '테스트기 두 줄 나왔어.',
+  '남편이 나한테 요즘 관심이 없어.',
+  '나 사실 네 동생을 사랑해.',
+  '우리 어젯밤 일은 아무한테도 말하지 마.',
+  '나 임신했어. 그런데 아빠가 누군지 모르겠어.',
+  '엄마가 나한테 친아빠가 따로 있다고 했어.',
+  '나 너랑 자고 싶어.',
+  '나 요즘 성생활이 너무 만족스러워.',
+  '아빠가 오늘 나한테 동생이 생긴다고 했어.',
+  '나 오늘 남자친구한테 청혼받았어.',
+  '나 어제 밤새도록 울었어.',
+  '나 사실 네 결혼식에 못 갈 것 같아.',
+  '나 어제 네 엄마랑 술 마셨어.',
+  '나 어제 네 아내한테 우리 사이를 말했어.',
+  '우리 엄마가 네 이름을 듣자마자 기절했어.',
+  '나 오늘 이혼 서류에 서명했어.',
+  '우리 아기가 태어나면 누구 성을 따라야 해?',
+  '나 어제 네가 부탁한 영상 찍었어.',
+  '나 사실 죽기 전에 꼭 해보고 싶은 게 있어.',
+  '나 오늘 처음으로 원나잇을 해봤어.',
+  '나 어제 네 이름으로 호텔 예약했어.',
+  '나 오늘부터 금주할 거야.',
+  '나 사실 네가 생각하는 것보다 훨씬 유명해.',
+  '나 오늘 병원에서 성병 검사를 받았어.',
+  '나 오늘 네 이름으로 인터뷰했어.',
+  '우리 집에 카메라가 설치돼 있었어.',
+  '나 오늘 내 인생 최악의 실수를 했어.',
+  '나 오늘 네 이름을 문신으로 새겼어.',
+  '나 네가 보낸 사진을 엄마한테 보여줬어.',
+  '나 오늘 네가 싫어하는 사람과 데이트했어.',
+  '나 네가 준 약 먹었어.',
+  '나 오늘 네 아내를 만났어.',
+  '나 진짜 중요한 얘기 있어.',
+  '나 사실 너한테 실망했어.',
+  '나 지금 제정신 아닌 것 같아.',
+  '나 너한테 부탁 하나만 할게.',
+  '나 오늘 정말 최악의 하루를 보냈어.',
+  '너 나를 얼마나 사랑해?',
+  '나한테 기회를 한 번만 더 줘.',
+  '나 오늘 진짜 큰일 날 뻔했어.',
+  '너 지금 나 무시하는 거야?',
+  '나 너한테 진심으로 사과하고 싶어.',
+  '나 이번에는 정말 잘해보고 싶어.',
+  '나 오늘부터 솔직하게 살기로 했어.',
+  '나 지금 도움이 필요해.',
+  '우리 잠깐 진지하게 얘기할 수 있어?'
+];
+const replies=[
+  '알아. 엄마가 너한테 연락하지 말래.',
+  '좋아. 네 남편한테도 알려줄게.',
+  '네가 아니라 네 아빠한테 보내려던 건데.',
+  '알아. 네 남편이 지금 우리 집에서 자고 있거든.',
+  '나도 그래. 네 딸이랑 결혼하기로 했거든.',
+  '있지. 근데 네 엄마가 먼저 말할 것 같아.',
+  '알아. 어제 나한테 청혼했거든.',
+  '축하해. 근데 우리 둘 다 남자잖아.',
+  '미안. 내가 너무 자주 만나서 그런가 봐.',
+  '그럼 우리 둘이 취향은 똑같네.',
+  '이미 네 엄마한테 별점까지 받았어.',
+  '괜찮아. 후보 명단에 나만 없으면 돼.',
+  '그래서 내가 너한테 연락한 거야.',
+  '미안. 네 아빠랑 약속 있어.',
+  '다행이다. 우리 남편도 그러더라.',
+  '나도 들었어. 엄마가 임신했대.',
+  '축하해. 반지는 내가 골라줬어.',
+  '알아. 옆방에서 네 남편이랑 있었거든.',
+  '괜찮아. 신랑도 안 오기로 했거든.',
+  '그래서 엄마가 오늘 나한테 이혼한다고 했구나.',
+  '잘했어. 이제 네 남편한테도 말해.',
+  '아직 내 다른 이름은 말 안 했지?',
+  '고마워. 이제 나도 네 남편이랑 결혼할 수 있겠다.',
+  '일단 네 남편 성은 아니야.',
+  '좋아. 이제 그걸 법정에서 틀면 되겠네.',
+  '유언장에 내 이름부터 지워.',
+  '축하해. 근데 왜 우리 집에서 했어?',
+  '고마워. 네 아내랑 잘 다녀올게.',
+  '그럼 방금 네가 마신 건 우리 집 수영장 물이야?',
+  '알아. 뉴스에서 네 수배 전단 봤어.',
+  '결과 나오면 우리 단체 채팅방에 공유해.',
+  '그래서 네가 내 범죄를 자백한 거야?',
+  '알아. 그래서 어제는 옷을 입고 갔잖아.',
+  '나랑 결혼한 거 말하는 거야?',
+  '그거 내 이름 아니잖아.',
+  '그래서 엄마가 나한테 결혼하자고 했구나.',
+  '나도. 네가 거울을 봤나 보네.',
+  '좋아. 이제 네가 왜 아직 살아 있는지 설명해 봐.',
+  '그 사람 아직도 자기가 내 아내인 줄 알아?',
+  '그럼 더더욱 나한테 하지 마.',
+  '기대했다는 사실이 더 충격인데.',
+  '걱정 마. 평소랑 똑같아.',
+  '싫어. 아직 뭔지도 안 들었지만 싫어.',
+  '아직 저녁도 안 됐잖아.',
+  '변호사 비용까지 생각하면 꽤 많이.',
+  '지금까지 준 기회로 작은 나라 하나 세웠어.',
+  '아쉽네. 다음엔 성공하길 바라.',
+  '아니. 그 정도로 신경 쓰지도 않아.',
+  '진심은 됐고, 보상부터 얘기해.',
+  '네가 참여하지 않는 방법은 없어?',
+  '그럼 우리 다시는 만나지 말자.',
+  '유감이야. 난 구경하러 왔거든.',
+  '안 돼. 나 지금 즐거운 사람이라서.'
+];
+const makeCards=(arr,prefix)=>arr.map((text,i)=>({id:prefix+i,label:prefix==='o'?'첫 메시지':'답장',text}));
+const openerDeck=makeCards(openers,'o'),replyDeck=makeCards(replies,'r');
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function drawHand(){return shuffle(deck).slice(0,5)}
+function drawHand(role){return shuffle(role==='opener'?openerDeck:replyDeck).slice(0,5)}
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.screen===id))}
-function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2300)}
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2400)}
 function status(t){$('netStatus').textContent=t}
 function rid(){return Math.random().toString(36).slice(2,8).toUpperCase()}
 function safe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function broadcast(data){for(const c of connections.values())if(c.open)c.send(data)}
-function directToPlayer(playerId,data){if(playerId===uid)return;const p=players.find(x=>x.id===playerId);const c=p&&connections.get(p.peer);if(c&&c.open)c.send(data)}
-function addSystem(text){const d=document.createElement('div');d.className='system';d.textContent=text;$('chat').appendChild(d);$('chat').scrollTop=$('chat').scrollHeight}
-let slamAudioContext=null;
-function playSlamSound(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;slamAudioContext=slamAudioContext||new AC();if(slamAudioContext.state==='suspended')slamAudioContext.resume();const ctx=slamAudioContext,now=ctx.currentTime;const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(105,now);osc.frequency.exponentialRampToValueAtTime(38,now+.22);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.48,now+.012);gain.gain.exponentialRampToValueAtTime(.0001,now+.32);osc.connect(gain);gain.connect(ctx.destination);osc.start(now);osc.stop(now+.34);const len=Math.floor(ctx.sampleRate*.12),buf=ctx.createBuffer(1,len,ctx.sampleRate),data=buf.getChannelData(0);for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*(1-i/len);const noise=ctx.createBufferSource(),ng=ctx.createGain(),filter=ctx.createBiquadFilter();noise.buffer=buf;filter.type='lowpass';filter.frequency.value=480;ng.gain.setValueAtTime(.22,now);ng.gain.exponentialRampToValueAtTime(.0001,now+.12);noise.connect(filter);filter.connect(ng);ng.connect(ctx.destination);noise.start(now);noise.stop(now+.13);}catch(e){}}
-function slamEffect(){const app=document.querySelector('.app');app.classList.remove('slam-shake');void app.offsetWidth;app.classList.add('slam-shake');const layer=document.createElement('div');layer.className='slam-flash';layer.innerHTML='<div class="slam-word">쾅!!!</div>';app.appendChild(layer);setTimeout(()=>layer.remove(),680);playSlamSound();}
-function addMessage(m){const from=players.find(x=>x.id===m.from)?.nick||'플레이어';const row=document.createElement('div');row.className='msgrow '+(m.from===uid?'mine':'')+' incoming-impact';const wrap=document.createElement('div');wrap.className='msgwrap';const who=document.createElement('div');who.className='who';who.textContent=from+' · 단체방';wrap.appendChild(who);const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=m.text;wrap.appendChild(bubble);row.appendChild(wrap);$('chat').appendChild(row);$('chat').scrollTop=$('chat').scrollHeight;slamEffect();}
-function updateWaiting(){ $('waitingList').innerHTML=players.map(p=>`<div class="person" style="display:inline-block;margin:3px">👤 ${safe(p.nick)} ${p.host?'· 방장':''}</div>`).join('');$('begin').disabled=!(host&&players.length>=2&&!started); }
-function render(){if(!started)return;$('people').innerHTML=players.map(p=>`<span class="person ${p.id===turnId?'active':''}">👤 ${safe(p.nick)}${p.id===uid?' · 나':''}</span>`).join('');const current=players.find(p=>p.id===turnId);$('turnTitle').textContent=(current?.nick||'상대')+' 차례';$('count').textContent=hand.length+'장 보유';$('hand').innerHTML=hand.map((c,i)=>`<button class="card ${i===selected?'selected':''}" data-card="${i}" ${turnId!==uid?'disabled':''}><span class="suit">${safe(c.label)}</span><span class="copy">${safe(c.text)}</span><span class="index">카드 ${String(i+1).padStart(2,'0')} · 눌러서 전송</span></button>`).join('');$('playerList').innerHTML=players.map(p=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)">👤 ${safe(p.nick)} ${p.id===uid?'(나)':''} ${p.id===turnId?' · 차례':''}</div>`).join('');$('hint').textContent=turnId===uid?'내 차례! 카드 한 장을 누르면 모두의 톡방에 바로 올라갑니다.':'다른 플레이어가 카드를 고르는 중입니다.';}
-const aiNames=['김막장봇','전애인봇','익명폭로봇'];
-const aiReplies=[
-'잠깐만. 방금 그 말 캡처해서 다른 단톡에도 올렸어.',
-'ㅋㅋㅋㅋ 너 지금 본인 얘기하는 거 맞지?',
-'나만 몰랐던 거야? 아니면 너만 숨긴 거야?',
-'증거는 이미 있고 변명은 듣지 않을게.',
-'미안한데 그 얘기 어제 네 전 애인한테도 들었어.',
-'와 이건 실시간으로 박제해야 한다.',
-'그 자신감으로 그런 짓을 했다는 게 더 무서워.',
-'잠시만 가족 단톡에 잘못 보낸 척하고 올게.',
-'너희 둘 다 조용히 해. 내가 양쪽한테 다른 얘기 들었거든.',
-'이 방 나가면 끝날 줄 알지? 스크린샷은 남아.'
-];
-function startSolo(){
-  if(aiTimer)clearTimeout(aiTimer);soloMode=true;host=false;isPublic=false;room='SOLO';nick=$('nick').value.trim()||'나';uid='solo-human';
-  players=[{id:uid,nick,host:true},...aiNames.slice(0,2).map((n,i)=>({id:'ai-'+i,nick:n,ai:true}))];
-  hand=drawHand();hands={};players.forEach(p=>hands[p.id]=p.id===uid?hand:drawHand());
-  started=true;turnId=uid;selected=-1;connections.clear();peer=null;hostConn=null;
-  $('chat').innerHTML='';$('roomTitle').textContent='# 혼자 하기 · AI 단체방';$('tabs').classList.remove('hide');
-  addSystem('AI 상대와 혼자 플레이를 시작했습니다. AI는 각자 자기 손패에서 카드를 골라 답장합니다.');
-  enterGameWithIntro();render();
-}
-function soloPlay(from,cardId){
-  if(!soloMode||!started||from!==turnId)return;
-  const h=hands[from]||[];const index=h.findIndex(c=>c.id===cardId);if(index<0)return;
-  const card=h.splice(index,1)[0];h.push(shuffle(deck)[0]);hands[from]=h;
-  const m={type:'message',from,label:card.label,text:card.text};addMessage(m);
-  const idx=players.findIndex(p=>p.id===from);turnId=players[(idx+1)%players.length].id;
-  if(from===uid){hand=h;selected=-1;}render();
-  if(turnId!==uid)scheduleAI();
-}
-function scheduleAI(){
-  if(!soloMode||!started)return;if(aiTimer)clearTimeout(aiTimer);
-  const bot=players.find(p=>p.id===turnId&&p.ai);if(!bot)return;
-  aiTimer=setTimeout(()=>{
-    if(!soloMode||!started||turnId!==bot.id)return;
-    const h=hands[bot.id]||[];const card=h.splice(Math.floor(Math.random()*h.length),1)[0]||shuffle(deck)[0];
-    h.push(shuffle(deck)[0]);hands[bot.id]=h;
-    addMessage({type:'message',from:bot.id,label:card.label,text:Math.random()<.62?card.text:aiReplies[Math.floor(Math.random()*aiReplies.length)]});
-    const idx=players.findIndex(p=>p.id===bot.id);turnId=players[(idx+1)%players.length].id;render();
-    if(turnId!==uid)scheduleAI();
-  },1100+Math.random()*900);
-}
-async function makePeer(id){if(typeof Peer==='undefined'){await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';sc.onload=resolve;sc.onerror=()=>reject(new Error('PeerJS 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 CDN 차단을 확인하세요.'));document.head.appendChild(sc);});}return new Promise((resolve,reject)=>{peer=new Peer(id||undefined,{debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]}});let settled=false;peer.on('open',pid=>{settled=true;resolve(pid)});peer.on('error',e=>{if(!settled){settled=true;reject(e)}else toast('연결 오류: '+e.type)});peer.on('disconnected',()=>{status('시그널링 서버 연결이 끊겼습니다. 재연결 중…');if(peer&&!peer.destroyed)peer.reconnect()});peer.on('connection',conn=>{if(!host){conn.close();return}connections.set(conn.peer,conn);conn.on('data',d=>hostReceive(conn,d));conn.on('close',()=>removePeer(conn.peer));conn.on('error',()=>removePeer(conn.peer));});});}
-function removePeer(peerId){connections.delete(peerId);const p=players.find(x=>x.peer===peerId);if(!p)return;players=players.filter(x=>x.peer!==peerId);delete hands[p.id];if(turnId===p.id)turnId=players[0]?.id||'';broadcast({type:'roster',players,turnId});updateWaiting();render();addSystem(p.nick+' 연결이 종료되었습니다.');}
 
-let tutorialIndex=0,tutorialDone=false;
+function currentCharacter(){return {name:$('nick')?.value.trim()||'무명'};}
+let avatarSvgSeq=0;
+function characterSVG(ch={}){
+ const uidSvg='av'+(++avatarSvgSeq);
+ const hair=['short','long','curly','bob','spiky'].includes(ch.hair)?ch.hair:'short';
+ const skin=['#f3c9a5','#d99b70','#986447','#f0d8c5'].includes(ch.skin)?ch.skin:'#f3c9a5';
+ const garment=['hoodie','jacket','uniform'].includes(ch.outfit)?ch.outfit:'hoodie';
+ const cloth=/^#[0-9a-f]{6}$/i.test(ch.color||'')?ch.color:'#ff6b6b';
+ const hairBack={
+  short:'<path d="M43 77 Q25 45 39 23 Q53 4 81 8 Q116 5 127 34 Q136 58 117 88 L108 74 L52 74Z"/>',
+  long:'<path d="M42 76 Q23 43 39 20 Q53 3 81 7 Q117 4 129 34 Q139 58 118 91 L137 181 Q123 195 108 180 L105 91 L55 91 L52 180 Q36 195 21 181 L42 91Z"/>',
+  curly:'<path d="M42 79 Q19 68 29 49 Q15 31 37 22 Q42 1 61 15 Q78 -4 94 14 Q116 3 123 27 Q145 34 132 57 Q140 78 117 91 L45 94Z"/>',
+  bob:'<path d="M42 76 Q23 43 39 20 Q53 3 81 7 Q117 4 129 34 Q139 58 118 91 L126 128 Q113 141 101 128 L104 88 L56 88 L59 128 Q46 141 33 128 L42 91Z"/>',
+  spiky:'<path d="M42 77 L23 39 L51 51 L47 10 L76 39 L92 3 L106 43 L137 22 L124 78 L114 94 L44 94Z"/>'
+ }[hair];
+ const hairFront={
+  short:'<path d="M43 69 Q34 48 41 29 Q50 8 80 8 Q112 7 122 31 Q128 49 117 69 Q108 55 96 52 Q83 44 73 54 Q59 45 49 68Z"/><path d="M49 43 Q61 26 79 29 Q98 19 113 39" fill="none" stroke="#bd8b9b" stroke-width="3" stroke-linecap="round"/>',
+  long:'<path d="M42 68 Q33 44 41 25 Q50 6 80 7 Q114 6 123 31 Q130 50 118 69 Q107 53 96 51 Q82 43 72 54 Q57 44 48 68Z"/><path d="M43 61 Q38 82 42 112 L39 151 Q39 164 49 174 Q58 164 55 149 L54 91Z"/><path d="M117 61 Q122 82 118 112 L121 151 Q121 164 111 174 Q102 164 105 149 L106 91Z"/>',
+  curly:'<path d="M42 69 Q27 61 35 45 Q23 31 40 20 Q43 3 60 15 Q72 -2 85 13 Q101 0 111 18 Q132 16 128 37 Q142 52 122 68 Q111 54 101 58 Q89 44 78 57 Q65 44 55 62Z"/><circle cx="43" cy="37" r="10"/><circle cx="60" cy="19" r="10"/><circle cx="83" cy="15" r="11"/><circle cx="106" cy="25" r="10"/><circle cx="125" cy="43" r="9"/><circle cx="39" cy="67" r="9"/><circle cx="121" cy="67" r="9"/>',
+  bob:'<path d="M42 68 Q33 44 41 25 Q50 6 80 7 Q114 6 123 31 Q130 50 118 69 Q107 53 96 51 Q82 43 72 54 Q57 44 48 68Z"/><path d="M43 57 Q37 79 40 103 Q40 121 52 130 Q61 121 57 106 L55 82Z"/><path d="M117 57 Q123 79 120 103 Q120 121 108 130 Q99 121 103 106 L105 82Z"/>',
+  spiky:'<path d="M42 69 L27 31 L52 46 L50 9 L76 39 L96 3 L106 42 L135 22 L123 69 Q109 54 96 53 Q82 42 70 55 Q55 44 45 69Z"/>'
+ }[hair];
+ let clothes='';
+ if(garment==='hoodie') clothes=`<path d="M48 119 Q53 105 67 105 L93 105 Q107 105 113 119 L133 151 L121 184 L39 184 L27 151Z" fill="url(#${uidSvg}cloth)"/><path d="M61 110 Q80 92 99 110 L105 127 Q80 143 55 127Z" fill="#201b2b" opacity=".22"/><path d="M66 116 Q80 136 94 116" fill="none" stroke="#fff" stroke-width="3" opacity=".8"/><path d="M73 131 L70 150 M87 131 L90 150" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><path d="M48 125 L34 153 M112 125 L126 153" stroke="${cloth}" stroke-width="18" stroke-linecap="round"/>`;
+ if(garment==='jacket') clothes=`<path d="M48 119 Q53 105 67 105 L93 105 Q107 105 113 119 L133 151 L121 184 L39 184 L27 151Z" fill="url(#${uidSvg}cloth)"/><path d="M62 108 L80 127 L98 108 L108 184 L52 184Z" fill="#fff" opacity=".16"/><path d="M62 109 L80 130 L70 151 L51 119Z" fill="#fff" opacity=".85"/><path d="M98 109 L80 130 L90 151 L109 119Z" fill="#fff" opacity=".65"/><path d="M80 130 L80 181" stroke="#292331" stroke-width="3"/><circle cx="80" cy="145" r="2.5" fill="#fff"/><path d="M48 125 L34 153 M112 125 L126 153" stroke="${cloth}" stroke-width="18" stroke-linecap="round"/>`;
+ if(garment==='uniform') clothes=`<path d="M48 119 Q53 105 67 105 L93 105 Q107 105 113 119 L133 151 L121 184 L39 184 L27 151Z" fill="url(#${uidSvg}cloth)"/><path d="M63 107 L80 128 L97 107 L91 122 L80 137 L69 122Z" fill="#fff"/><path d="M80 137 L72 151 L80 177 L88 151Z" fill="#34466c"/><path d="M48 125 L34 153 M112 125 L126 153" stroke="${cloth}" stroke-width="18" stroke-linecap="round"/><path d="M49 128 L38 151 M111 128 L122 151" stroke="#fff" stroke-width="3" opacity=".6"/>`;
+ return `<svg viewBox="0 0 160 210" role="img" aria-label="게임 캐릭터" xmlns="http://www.w3.org/2000/svg"><defs>
+ <linearGradient id="${uidSvg}skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#8b5144" stop-opacity=".18"/></linearGradient>
+ <linearGradient id="${uidSvg}cloth" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${cloth}"/><stop offset="1" stop-color="#252033"/></linearGradient>
+ <linearGradient id="${uidSvg}hair" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#86566a"/><stop offset="1" stop-color="#211b2b"/></linearGradient>
+ <filter id="${uidSvg}shadow"><feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#24182b" flood-opacity=".2"/></filter></defs>
+ <ellipse cx="80" cy="202" rx="42" ry="5" fill="#211b2a" opacity=".16"/><g filter="url(#${uidSvg}shadow)">
+ <path d="${hairBack}" fill="url(#${uidSvg}hair)"/>
+ <path d="M62 171 L58 193 Q67 198 77 193 L79 169 M84 169 L86 193 Q96 198 105 193 L98 169" fill="#343443"/>
+ <path d="M55 191 Q67 188 79 192 L79 200 L52 200 Q50 196 55 191 M82 192 Q95 188 108 191 Q112 196 108 200 L82 200Z" fill="#fff8ef"/>
+ ${clothes}
+ <path d="M48 125 Q35 132 35 151 M112 125 Q125 132 125 151" fill="none" stroke="${skin}" stroke-width="13" stroke-linecap="round"/>
+ <path d="M34 151 Q35 161 44 157 M126 151 Q125 161 116 157" fill="none" stroke="${skin}" stroke-width="10" stroke-linecap="round"/>
+ <rect x="71" y="96" width="18" height="24" rx="8" fill="${skin}"/><ellipse cx="80" cy="66" rx="34" ry="39" fill="${skin}"/><ellipse cx="80" cy="66" rx="34" ry="39" fill="url(#${uidSvg}skin)"/>
+ <ellipse cx="46" cy="72" rx="5" ry="8" fill="${skin}"/><ellipse cx="114" cy="72" rx="5" ry="8" fill="${skin}"/>
+ <path d="M54 68 Q63 62 72 67 M88 67 Q98 62 106 68" fill="none" stroke="#34232d" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="64" cy="74" rx="3.4" ry="4.4" fill="#211b27"/><ellipse cx="96" cy="74" rx="3.4" ry="4.4" fill="#211b27"/><circle cx="65" cy="72.5" r="1.2" fill="#fff"/><circle cx="97" cy="72.5" r="1.2" fill="#fff"/><path d="M78 82 Q80 85 83 82" stroke="#b87968" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M71 93 Q80 100 89 93" stroke="#a94f61" stroke-width="2.8" fill="none" stroke-linecap="round"/><ellipse cx="54" cy="87" rx="7" ry="4" fill="#ef8994" opacity=".48"/><ellipse cx="106" cy="87" rx="7" ry="4" fill="#ef8994" opacity=".48"/>
+ <g fill="url(#${uidSvg}hair)" stroke="#211b2b" stroke-width="1.4" stroke-linejoin="round">${hairFront}</g>
+ </g></svg>`;
+}
+function avatarMarkup(p){return '';}
+function updateCharacterPreview(){}
+
+function broadcast(data){for(const c of connections.values())if(c.open)c.send(data)}
+function directToPlayer(id,data){if(id===uid)return;const p=players.find(x=>x.id===id),c=p&&connections.get(p.peer);if(c&&c.open)c.send(data)}
+function addSystem(t){const d=document.createElement('div');d.className='system';d.textContent=t;$('chat').appendChild(d)}
+let slamAudioContext=null;
+function playSlamSound(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;slamAudioContext=slamAudioContext||new AC();if(slamAudioContext.state==='suspended')slamAudioContext.resume();const c=slamAudioContext,n=c.currentTime,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(110,n);o.frequency.exponentialRampToValueAtTime(36,n+.22);g.gain.setValueAtTime(.001,n);g.gain.exponentialRampToValueAtTime(.42,n+.012);g.gain.exponentialRampToValueAtTime(.001,n+.3);o.connect(g);g.connect(c.destination);o.start(n);o.stop(n+.31)}catch(e){}}
+let gameAudio=null,audioEnabled=true,bgmNodes=[],bgmTimer=null,bgmStep=0;
+function audioInit(){if(gameAudio)return gameAudio;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;gameAudio=new AC();return gameAudio;}
+function tone(freq,duration=.12,type='sine',gain=.06,when=0){const c=audioInit();if(!c||!audioEnabled)return;if(c.state==='suspended')c.resume();const t=c.currentTime+when,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(gain,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+duration);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+duration+.02);}
+function sfx(name){if(!audioEnabled)return;if(name==='card'){tone(520,.08,'triangle',.07);tone(760,.11,'triangle',.045,.06)}else if(name==='message'){tone(660,.09,'sine',.055);tone(880,.12,'sine',.04,.08)}else if(name==='result'){[523,659,784,1047].forEach((f,i)=>tone(f,.32,'triangle',.07,i*.13));}else if(name==='click'){tone(420,.045,'square',.025)}}
+function startBGM(){const c=audioInit();if(!c||!audioEnabled||bgmTimer)return;if(c.state==='suspended')c.resume();const chords=[[130.81,164.81,196],[110,138.59,164.81],[146.83,174.61,220],[123.47,155.56,185]];const melody=[392,440,493.88,440,392,329.63,349.23,392,440,392,349.23,329.63];bgmStep=0;const playBar=()=>{if(!audioEnabled||document.hidden)return;const bar=bgmStep++%chords.length;chords[bar].forEach((f,i)=>{tone(f,.95,'sine',.035,i*.018);tone(f*2,.72,'triangle',.012,.04+i*.018)});tone(chords[bar][0]/2,.95,'sine',.045,.02);for(let i=0;i<3;i++)tone(melody[(bgmStep*3+i)%melody.length],.28,'triangle',.035,.18+i*.31)};playBar();bgmTimer=setInterval(playBar,1900);}
+function stopBGM(){if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
+function playResultSound(){sfx('result')}
+function toggleSound(){audioEnabled=!audioEnabled;$('soundToggle').textContent=audioEnabled?'♫ BGM ON':'♫ BGM OFF';$('soundToggle').setAttribute('aria-pressed',String(audioEnabled));if(audioEnabled){audioInit();startBGM();sfx('click')}else stopBGM();}
+function slamEffect(){const app=document.querySelector('.app');app.classList.remove('slam-shake');void app.offsetWidth;app.classList.add('slam-shake');const l=document.createElement('div');l.className='slam-flash';l.innerHTML='<div class="slam-word">쾅!!!</div>';app.appendChild(l);setTimeout(()=>l.remove(),680);playSlamSound()}
+function updateWaiting(){$('waitingList').innerHTML=players.map(p=>`<div class="person" style="display:inline-block;margin:3px">👤 ${safe(p.nick)} ${p.host?'· 방장':''}</div>`).join('');$('begin').disabled=!(host&&players.length>=2&&players.length%2===0&&!started);}
+function render(){if(!started)return;const myPair=pairMeta;$('people').innerHTML=players.map(p=>`<span class="person ${myPair?.ids?.includes(p.id)?'active':''}">${safe(p.nick)}${p.id===uid?' · 나':''}</span>`).join('');const role=soloMode?soloRole:(myPair?.role||'opener');$('turnTitle').textContent=soloMode?(submitted?'AI 답장 대기 중':'AI 대결 · 카드 한 장 선택'):(submitted?'카드 제출 완료 · 상대를 기다리는 중':`당신은 ${role==='opener'?'첫 문자':'답장'}를 작성합니다`);$('count').textContent=hand.length+'장 남음';$('hand').innerHTML=hand.map((c,i)=>`<button class="card" data-card="${i}" ${submitted||revealed?'disabled':''}><span class="suit">${safe(c.label)}</span><span class="copy">${safe(c.text)}</span><span class="index">카드 ${i+1} · 한 장 선택</span></button>`).join('');$('playerList').innerHTML=players.map(p=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)">${safe(p.nick)} ${p.id===uid?'(나)':''}</div>`).join('');$('hint').textContent=soloMode?(submitted?'AI가 대화 맥락에 맞는 답장 카드 한 장을 고르고 있습니다…':'손패에서 카드 한 장만 선택하세요. AI도 한 장으로 답장합니다.'):(submitted?'상대도 한 장을 고르면 두 사람의 대화가 공개됩니다.':'상대가 낼 카드와 이어졌을 때 가장 웃길 문자를 골라보세요.');}
+function pairPlayers(){const order=shuffle(players);pairs=[];for(let i=0;i<order.length;i+=2){const a=order[i],b=order[i+1],pair={id:'pair-'+i,ids:[a.id,b.id],names:[a.nick,b.nick],opener:a.id,reply:b.id,sub:{}};pairs.push(pair);hands[a.id]=drawHand('opener');hands[b.id]=drawHand('reply');}}
+function beginLocal(){$('game').classList.remove('solo-finished');started=true;revealed=false;submissions={};submitted=false;pairMeta=pairs.find(x=>x.ids.includes(uid));hand=hands[uid]||[];$('chat').innerHTML='';addSystem('각자 한 장씩 제출하세요. 상대의 선택은 공개 전까지 비밀입니다.');$('playarea')?.classList.remove('waiting');render();}
+function addChatMessage(player,text,isMine=false){sfx('message');const row=document.createElement('div');row.className='msgrow'+(isMine?' mine':'')+' incoming-impact';const wrap=document.createElement('div');wrap.className='msgwrap';const who=document.createElement('div');who.className='who';who.textContent=player.nick;const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=text;wrap.append(who,bubble);row.append(wrap);$('chat').appendChild(row);$('chat').scrollTop=$('chat').scrollHeight;slamEffect();soloTranscript.push({nick:player.nick,text,isMine});}
+function addSoloResult(){
+ $('game').classList.add('solo-finished');
+ const result=document.createElement('div');
+ result.className='solo-result panel';
+ result.innerHTML=`<div class="result-kicker">✦ 대화 완성 ✦</div><b>이번 대화가 종료되었습니다.</b><p class="result-caption">${safe(players.find(p=>p.id===uid)?.nick||'나')} × ${safe(players.find(p=>p.ai)?.nick||'AI')}</p><button class="btn" id="soloReplay" type="button">한 판 더 하기</button>`;
+ $('chat').appendChild(result);$('chat').scrollTop=$('chat').scrollHeight;playResultSound();$('soloReplay').onclick=()=>startSolo();
+}
+function chooseAIReply(openerCard){
+  // AI is dealt five reply cards once. It must choose from that hand, using the
+  // exact paired answer when available, otherwise a context score over those five.
+  const candidates=aiHand.filter(c=>!usedAiCardIds.has(c.id));
+  if(!candidates.length)return null;
+  const paired=replyDeck.find(c=>c.id==='r'+String(openerCard.id).replace(/^o/,''));
+  if(paired&&!candidates.some(c=>c.id===paired.id)){aiHand=[paired,...aiHand.filter(c=>c.id!==paired.id).slice(0,4)];}
+  if(paired&&aiHand.some(c=>c.id===paired.id))return paired;
+  const text=openerCard.text;
+  const themes=[];
+  const rules=[
+    [/아빠|엄마|부모|가족|동생|딸|아들|남편|아내|성|결혼|청혼|신랑|이혼/,'family'],
+    [/임신|테스트기|아기|아이|아빠가 누군지/,'pregnancy'],
+    [/사진|영상|카메라|호텔|원나잇|성생활|잤어|자고 싶/,'affair'],
+    [/사과|실망|기회|부탁|도움|진지|중요한 얘기|최악의 하루/,'relationship'],
+    [/유명|수배|범죄|병원|성병|약|살아/,'trouble'],
+    [/무시|사랑|솔직|제정신|큰일/,'attitude']
+  ];
+  for(const [re,tag] of rules)if(re.test(text))themes.push(tag);
+  const replyRules=[
+    ['family',/엄마|아빠|남편|아내|결혼|신랑|가족|성|청혼|이혼/],
+    ['pregnancy',/임신|아기|아빠 후보|후보 명단/],
+    ['affair',/잤|약속 있어|우리 남편|네 아내|호텔|사진|법정|카메라/],
+    ['relationship',/기대|기회|부탁|사과|보상|나한테 하지 마|싫어/],
+    ['trouble',/수배|범죄|살아 있는지|법정|유언장|뉴스/],
+    ['attitude',/무시|사랑|솔직|제정신|아쉽|구경/]
+  ];
+  const score=c=>{
+    let n=0;
+    for(const [tag,re] of replyRules)if(themes.includes(tag)&&re.test(c.text))n+=4;
+    // The paired card gets a modest semantic bonus, not a blind random override.
+    if(paired&&c.id===paired.id)n+=3;
+    const openerWords=text.match(/[가-힣]{2,}/g)||[];
+    const replyWords=c.text.match(/[가-힣]{2,}/g)||[];
+    n+=openerWords.filter(w=>replyWords.includes(w)).length*2;
+    return n;
+  };
+  return [...candidates].sort((a,b)=>score(b)-score(a))[0];
+}
+function submitCard(card){if(!started||submitted||revealed||!card)return;if(soloMode){if(usedPlayerCardIds.has(card.id))return;submitted=true;usedPlayerCardIds.add(card.id);hand=hand.filter(c=>c.id!==card.id);const me=players.find(p=>p.id===uid),bot=players.find(p=>p.ai);addChatMessage(me,card.text,true);render();const aiCard=chooseAIReply(card);if(!aiCard){addSystem('AI가 낼 수 있는 카드가 없습니다.');finishSoloGame();return;}usedAiCardIds.add(aiCard.id);setTimeout(()=>{addChatMessage(bot,aiCard.text,false);finishSoloGame()},700);return;}submitted=true;const entry={playerId:uid,nick,text:card.text,cardId:card.id};if(host){receiveSubmission(uid,entry)}else if(hostConn&&hostConn.open){hostConn.send({type:'pairSubmission',entry})}else{submitted=false;toast('방장과 연결이 끊겼습니다.');}render();}
+function finishSoloGame(){started=false;submitted=true;revealed=true;$('turnTitle').textContent='대화 완성 · 게임 종료';$('count').textContent='카드 사용 완료';$('hand').innerHTML=hand.map(c=>`<button class="card" disabled><span class="suit">${safe(c.label)}</span><span class="copy">${safe(c.text)}</span><span class="index">미사용 카드</span></button>`).join('');$('hint').textContent='이번 판은 종료됐습니다. 대화 기록은 이 채팅방에 그대로 남아 있습니다.';addSystem('두 플레이어가 각자 카드 한 장씩 제출했습니다. 이번 게임이 종료되었습니다.');addSoloResult();}
+function receiveSubmission(playerId,entry){const pair=pairs.find(x=>x.ids.includes(playerId));if(!pair||pair.sub[playerId])return;pair.sub[playerId]={...entry,playerId};broadcast({type:'pairProgress',pairId:pair.id,done:Object.keys(pair.sub).length});if(pairs.every(x=>x.ids.every(id=>x.sub[id]))){const results=pairs.map(x=>({ids:x.ids,names:x.names,openerText:x.sub[x.opener].text,replyText:x.sub[x.reply].text}));broadcast({type:'revealRound',pairs:results});showRevealRound(results);}}
+function showRevealRound(results){revealed=true;revealPairs=results;revealIndex=0;renderReveal();$('revealOverlay').classList.remove('hide','finished');$('revealNext').onclick=nextReveal;}
+function renderReveal(){const p=revealPairs[revealIndex];if(!p)return;$('revealCount').textContent=`${revealIndex+1} / ${revealPairs.length}`;$('revealTitle').textContent='이 대화 실화냐?';$('revealPairNames').textContent=p.names.join('  ×  ');$('revealBubbles').innerHTML=`<div class="reveal-bubble left"><small>${safe(p.names[0])}</small>${safe(p.openerText)}</div><div class="reveal-bubble right"><small>${safe(p.names[1])}</small>${safe(p.replyText)}</div>`;$('revealPunch').textContent='OH. MY. GOD.';$('revealPunch').classList.remove('pop');setTimeout(()=>$('revealPunch').classList.add('pop'),900);$('revealNext').textContent=revealIndex===revealPairs.length-1?'전체 대화 다시 보기':'다음 대화 공개';setTimeout(slamEffect,1350);}
+function nextReveal(){if(revealIndex<revealPairs.length-1){revealIndex++;renderReveal()}else{$('revealOverlay').classList.add('finished');$('revealTitle').textContent='모든 대화 공개 완료';$('revealPairNames').textContent='오늘의 흑역사는 영구 보존됩니다.';$('revealBubbles').innerHTML=revealPairs.map(p=>`<div class="panel" style="text-align:left;color:#222;margin:8px 0"><b>${safe(p.names.join(' × '))}</b><p style="color:#333;margin-top:8px">${safe(p.openerText)}<br><b>↳</b> ${safe(p.replyText)}</p></div>`).join('');$('revealPunch').textContent='THE GROUP CHAT WILL NEVER FORGET.';$('revealPunch').classList.add('pop');$('revealNext').textContent='결과 보기';$('revealNext').onclick=finishOnlineGame;}}
+function finishOnlineGame(){$('revealOverlay').classList.add('hide');$('tabs').classList.add('hide');$('resultTitle').textContent='오늘의 대참사 종료!';$('resultAvatars').innerHTML='';$('resultStats').innerHTML=`참가자 <b>${players.length}명</b><br>완성된 문자 대화 <b>${revealPairs.length}개</b><br><span style="color:var(--muted)">모든 대화가 공개되었습니다.</span>`;show('result');}
+function startSolo(){show('game');$('game').classList.remove('solo-finished');soloMode=true;host=false;isPublic=false;room='SOLO';nick=$('nick').value.trim()||'You';$('nick').value=nick;uid='solo-human';const character=currentCharacter();players=[{id:uid,nick,host:true},{id:'ai-one',nick:'문제적 전 애인',ai:true,character:{name:'문제적 전 애인',hair:'spiky',skin:'#d6b6a0',outfit:'hoodie',color:'#8877dd'},color:'#8877dd'}];pairs=[];hands={};soloTranscript=[];soloRole='opener';hand=drawHand('opener');aiHand=drawHand('reply');usedPlayerCardIds=new Set();usedAiCardIds=new Set();pairMeta={role:'opener'};started=true;submitted=false;revealed=false;submissions={};$('chat').innerHTML='';addSystem('AI와 1대1 문자 대결입니다. 각자 손패에서 카드 한 장만 내면 대화가 완성됩니다.');$('roomTitle').textContent='# 1v1 · AI';$('tabs').classList.remove('hide');$('revealOverlay').classList.add('hide');enterTutorial();render();}
+function enterTutorial(){show('game');let seen=tutorialCompleted;try{seen=seen||localStorage.getItem('mw_tutorial_seen_v1')==='1'}catch(e){}if(seen){tutorialCompleted=true;startDealAnimation()}else{openTutorial()}}
+async function makePeer(id){if(typeof Peer==='undefined'){await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';sc.onload=resolve;sc.onerror=()=>reject(new Error('PeerJS를 불러오지 못했습니다.'));document.head.appendChild(sc)})}return new Promise((resolve,reject)=>{peer=new Peer(id||undefined,{debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}});let settled=false;peer.on('open',pid=>{settled=true;resolve(pid)});peer.on('error',e=>{if(!settled){settled=true;reject(e)}else toast('연결 오류: '+e.type)});peer.on('disconnected',()=>{status('시그널링 연결 재시도 중…');if(peer&&!peer.destroyed)peer.reconnect()});peer.on('connection',conn=>{if(!host){conn.close();return}connections.set(conn.peer,conn);conn.on('data',d=>hostReceive(conn,d));conn.on('close',()=>removePeer(conn.peer));conn.on('error',()=>removePeer(conn.peer));})})}
+function removePeer(peerId){connections.delete(peerId);const p=players.find(x=>x.peer===peerId);if(!p)return;players=players.filter(x=>x.id!==p.id);delete hands[p.id];updateWaiting();toast(p.nick+' 연결이 종료되었습니다.');}
+let tutorialIndex=0,tutorialCompleted=false;
 const tutorialSteps=[
-{title:'이 게임은 문자 카드로 하는 단체 채팅입니다',body:'상황 카드나 질문 카드는 없습니다. 내 손에 든 문장 카드가 곧 내가 보내는 문자입니다. 모두가 같은 단체 톡방에서 대화를 이어갑니다.',example:'예: “NEW PHONE WHO DIS — 번호 바꿨어. 너 같은 흑역사까지 백업할 필요는 없잖아.”'},
-{title:'내 차례가 오면 카드 한 장을 누르세요',body:'카드를 누르는 즉시 단체방에 전송됩니다. 누구에게 보낼지 고르거나 별도 전송 버튼을 누를 필요가 없습니다. 다음 플레이어 차례로 자동 이동합니다.',example:'한 명이 폭탄 문자를 던지면, 다음 사람은 자기 손패로 그 대화에 이어서 답장합니다.'},
-{title:'5장을 받고, 사용하면 새 카드가 들어옵니다',body:'각자 손패는 본인에게만 보입니다. 최대 8명이 한 방에서 순서대로 같은 톡방 대화를 이어갑니다. 목표는 정답 맞히기가 아니라 대화를 가장 미친 방향으로 몰고 가는 것!',example:'AI는 튜토리얼 예시에서만 등장할 수 있고, 실제 게임에서는 사람만 참여합니다.'}
+{title:'이 게임은 1대1 문자 배틀입니다',body:'온라인에서는 플레이어끼리 짝을 이루고, 혼자 하기도 AI와 한 번의 1대1 문자 대화를 완성합니다. 플레이어와 AI가 각자 카드 한 장만 냅니다.',example:'첫 문자: “나 진짜 중요한 얘기 있어.”  답장: “그럼 더더욱 나한테 하지 마.”'},
+{title:'각자 카드 딱 한 장만 냅니다',body:'손패에서 가장 웃기고 매운 카드 한 장을 선택하세요. 상대의 카드는 공개 전까지 볼 수 없습니다.',example:'두 사람이 카드를 제출하면 하나의 대화가 완성됩니다.'},
+{title:'마지막에 모든 대화를 하나씩 공개합니다',body:'모든 페어가 제출을 끝내면 대화를 한 쌍씩 공개합니다. 말풍선이 차례대로 등장하고 마지막에 효과가 터집니다.',example:'온라인은 2~8명 짝수 인원 · 혼자 하기는 AI와 1대1'}
 ];
 function openTutorial(){tutorialIndex=0;renderTutorial();$('tutorial').classList.remove('hide')}
-function renderTutorial(){const x=tutorialSteps[tutorialIndex];$('tStep').textContent=`HOW TO PLAY · ${tutorialIndex+1} / ${tutorialSteps.length}`;$('tTitle').textContent=x.title;$('tBody').textContent=x.body;$('tExample').textContent=x.example;$('tNext').textContent=tutorialIndex===tutorialSteps.length-1?'게임 시작':'다음';}
-function finishTutorial(){ $('tutorial').classList.add('hide');startDealAnimation(); }
+function renderTutorial(){const x=tutorialSteps[tutorialIndex];$('tStep').textContent=`HOW TO PLAY · ${tutorialIndex+1} / ${tutorialSteps.length}`;$('tTitle').textContent=x.title;$('tBody').textContent=x.body;$('tExample').textContent=x.example;$('tNext').textContent=tutorialIndex===tutorialSteps.length-1?'게임 시작':'다음'}
+function finishTutorial(){$('tutorial').classList.add('hide');tutorialCompleted=true;try{localStorage.setItem('mw_tutorial_seen_v1','1')}catch(e){}startDealAnimation()}
 $('tSkip').onclick=finishTutorial;$('tNext').onclick=()=>{if(tutorialIndex<tutorialSteps.length-1){tutorialIndex++;renderTutorial()}else finishTutorial()};
 function startDealAnimation(){const o=$('dealOverlay');o.classList.remove('hide');setTimeout(()=>{o.classList.add('hide');show('game');render()},1650)}
-function enterGameWithIntro(){ $('tabs').classList.remove('hide');$('roomTitle').textContent='# '+room;show('game');openTutorial();}
-
-$('soloStart').onclick=startSolo;$('kakao').onclick=()=>document.body.className='kakao';$('insta').onclick=()=>document.body.className='insta';$('dark').onclick=()=>document.body.className='dark';$('start').onclick=()=>show('setup');$('back').onclick=()=>show('home');
-async function createRoom(publicRoom=false){if($('create').dataset.busy==='1')return;$('create').dataset.busy='1';$('create').textContent='방 만드는 중…';nick=$('nick').value.trim();if(!nick){$('create').dataset.busy='0';$('create').textContent='방 만들기';return toast('닉네임을 입력하세요.');}host=true;isPublic=publicRoom;room=publicRoom?'PUBLIC':rid();uid='host-'+Math.random().toString(36).slice(2,8);roomPeerId=publicRoom?'mw-public-room-v1':'mwroom-'+room.toLowerCase();players=[{id:uid,nick,host:true}];hand=drawHand();hands={[uid]:hand};started=false;try{await makePeer(roomPeerId);$('roomCode').textContent=publicRoom?'공개방':room;updateWaiting();show('waiting');status(publicRoom?'공개방 생성 완료 · 누구나 공개방 입장 버튼으로 참가할 수 있습니다.':'비공개 방 생성 완료 · 6자리 코드로 참가할 수 있습니다.');}catch(e){host=false;toast(e.type==='unavailable-id'?'방 코드 충돌입니다. 다시 방을 만들어 주세요.':'방 생성 실패: '+e.message);status('연결 실패 · '+(e.message||e.type||'인터넷 연결을 확인하세요.'));}finally{$('create').dataset.busy='0';$('create').textContent='비공개 방 만들기';$('createPublic').disabled=false;$('create').disabled=false;}}
-$('create').onclick=()=>createRoom(false);
-$('createPublic').onclick=()=>createRoom(true);
-function hostReceive(conn,d){if(!d||typeof d!=='object')return;if(d.type==='hello'){if(started){conn.send({type:'error',message:'게임이 이미 시작되어 참가할 수 없습니다.'});conn.close();return;}if(players.length>=8){conn.send({type:'error',message:'방이 가득 찼습니다.'});conn.close();return;}if(players.some(p=>p.peer===conn.peer))return;const p={id:String(d.clientId||('p-'+Math.random().toString(36).slice(2,10))).slice(0,40),nick:String(d.nick||'플레이어').slice(0,16),peer:conn.peer};players.push(p);hands[p.id]=drawHand();conn.send({type:'welcome',room,players,started:false});broadcast({type:'roster',players,turnId});updateWaiting();}
-if(d.type==='play'&&started){const p=players.find(x=>x.peer===conn.peer);if(!p||p.id!==turnId)return;processPlay(p.id,d.cardId);}}
-function processPlay(from,cardId){if(soloMode){soloPlay(from,cardId);return;}if(!started||from!==turnId)return;const h=hands[from]||[];const index=h.findIndex(c=>c.id===cardId);if(index<0)return;const card=h.splice(index,1)[0];const replacement=shuffle(deck.filter(c=>!h.some(x=>x.id===c.id)))[0]||deck[Math.floor(Math.random()*deck.length)];h.push(replacement);hands[from]=h;const message={type:'message',from,label:card.label,text:card.text};broadcast(message);addMessage(message);const currentIndex=players.findIndex(p=>p.id===from);turnId=players[(currentIndex+1)%players.length]?.id||from;broadcast({type:'turn',turnId});if(from===uid){hand=h;selected=-1;render()}else directToPlayer(from,{type:'privateHand',hand:h});render();if(soloMode&&turnId!==uid)scheduleAiTurn();}
-function scheduleAiTurn(){if(!soloMode||!started||turnId===uid)return;clearTimeout(aiTimer);aiTimer=setTimeout(()=>{if(!soloMode||!started||turnId===uid)return;const bot=players.find(p=>p.id===turnId);const botHand=hands[turnId]||[];if(!bot||!botHand.length)return;const chosen=botHand[Math.floor(Math.random()*botHand.length)];processPlay(bot.id,chosen.id);},1100+Math.random()*1300);}
-function startSolo(){nick=$('nick').value.trim()||'나';uid='solo-human';host=false;soloMode=true;isPublic=false;room='혼자 플레이';peer=null;hostConn=null;connections.clear();players=[{id:uid,nick,host:true},{id:'ai-1',nick:'전애인.exe',ai:true},{id:'ai-2',nick:'단톡유출범',ai:true},{id:'ai-3',nick:'양심리스',ai:true}];hands={};players.forEach(p=>hands[p.id]=drawHand());hand=hands[uid];started=true;turnId=uid;selected=-1;$('chat').innerHTML='<div class="system">AI와 함께하는 혼자 플레이 · 4명이 같은 단체 톡방에서 대화합니다.</div>';$('tabs').classList.remove('hide');$('roomTitle').textContent='# SOLO CHAOS';enterGameWithIntro();render();} 
-$('soloStart').onclick=startSolo;
-async function joinRoom(publicRoom=false){const button=publicRoom?$('joinPublic'):$('join');if(button.dataset.busy==='1')return;button.dataset.busy='1';button.textContent='접속 중…';nick=$('nick').value.trim();room=publicRoom?'PUBLIC':$('code').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!nick||(!publicRoom&&room.length!==6)){button.dataset.busy='0';button.textContent=publicRoom?'공개방 바로 입장':'코드로 참가';return toast(publicRoom?'닉네임을 입력하세요.':'닉네임과 6자리 방 코드를 입력하세요.');}host=false;isPublic=publicRoom;uid='p-'+Math.random().toString(36).slice(2,10);try{await makePeer();const targetPeer=publicRoom?'mw-public-room-v1':'mwroom-'+room.toLowerCase();hostConn=peer.connect(targetPeer,{reliable:true});let gotResponse=false;hostConn.on('open',()=>{hostConn.send({type:'hello',nick,clientId:uid});status('방 참가 요청을 전송했습니다.');});hostConn.on('data',d=>{gotResponse=true;handleData(d)});hostConn.on('error',e=>{toast('방 연결 실패: '+(e.message||e.type));status('연결 실패 · '+(e.type||e.message));});hostConn.on('close',()=>{if(!gotResponse)toast('방을 찾지 못했습니다. 방장이 접속 중인지 확인하세요.');else toast('방장 연결이 종료되었습니다.');status('방 연결 종료');});setTimeout(()=>{if(!gotResponse&&hostConn&&!hostConn.open){toast('연결 시간이 초과되었습니다. 코드와 방장 접속 상태를 확인하세요.');}},12000);$('roomTitle').textContent='# '+room;}catch(e){toast('접속 실패: '+(e.message||e.type));status('접속 실패 · '+(e.message||e.type));}finally{button.dataset.busy='0';button.textContent=publicRoom?'공개방 바로 입장':'코드로 참가';}}
-$('join').onclick=()=>joinRoom(false);$('joinPublic').onclick=()=>joinRoom(true);$('code').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)});$('code').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom(false)});
-function handleData(d){if(!d||typeof d!=='object')return;if(d.type==='error'){toast(d.message);return;}if(d.type==='welcome'){players=d.players;room=d.room;updateWaiting();show('waiting');status('방에 연결되었습니다. 방장이 게임을 시작할 때까지 기다리세요.');}if(d.type==='roster'){players=d.players;turnId=d.turnId||turnId;updateWaiting();render();}if(d.type==='gameStart'){players=d.players;started=true;turnId=d.turnId;hand=d.hand||hand;$('tabs').classList.remove('hide');$('roomTitle').textContent='# '+room;enterGameWithIntro();render();addSystem('게임 시작! 모두가 함께 보는 단체 톡방입니다.');}if(d.type==='message')addMessage(d);if(d.type==='turn'){turnId=d.turnId;render();}if(d.type==='privateHand'){hand=d.hand;selected=-1;render();}}
-$('begin').onclick=()=>{if(!host||players.length<2||started)return;started=true;turnId=uid;for(const p of players){if(p.id===uid)continue;directToPlayer(p.id,{type:'gameStart',players,turnId,hand:hands[p.id]});}hand=hands[uid];$('tabs').classList.remove('hide');$('roomTitle').textContent='# '+room;enterGameWithIntro();render();addSystem('게임 시작! 모두가 함께 보는 단체 톡방입니다.');};
-document.addEventListener('click',e=>{const b=e.target.closest('[data-card]');if(!b||b.disabled||!started||turnId!==uid)return;const i=Number(b.dataset.card),card=hand[i];if(!card)return;b.classList.add('playing');setTimeout(()=>{if(soloMode)processPlay(uid,card.id);else if(host)processPlay(uid,card.id);else if(hostConn&&hostConn.open)hostConn.send({type:'play',cardId:card.id});else toast('방장과 연결이 끊겼습니다.');},170);});
-
-$('tabs').onclick=e=>{const b=e.target.closest('[data-screen]');if(!b)return;show(b.dataset.screen);if(b.dataset.screen==='cards')render();};$('toGame1').onclick=$('toGame2').onclick=()=>show('game');
-function leaveRoom(){clearTimeout(aiTimer);soloMode=false;if(peer)peer.destroy();peer=null;hostConn=null;connections.clear();players=[];hand=[];hands={};started=false;turnId='';host=false;isPublic=false;selected=-1;$('tabs').classList.add('hide');$('chat').innerHTML='<div class="system">게임이 시작되면 실제 플레이어의 문자가 표시됩니다.</div>';show('home');status('온라인 연결 준비 완료 · 방 코드로 참가할 수 있습니다.');}
+$('soundToggle').onclick=toggleSound;document.addEventListener('pointerdown',()=>{if(audioEnabled)startBGM()},{once:true});$('soloStart').onclick=()=>{startBGM();startSolo();};$('soloQuick').onclick=()=>show('setup');$('kakao').onclick=()=>document.body.className='kakao';$('insta').onclick=()=>document.body.className='insta';$('dark').onclick=()=>document.body.className='dark';$('start').onclick=()=>show('setup');$('back').onclick=()=>show('home');$('playAgain').onclick=()=>{if(soloMode){startSolo();}else{leaveRoom();show('setup');}};$('resultHome').onclick=()=>{leaveRoom();};
+async function createRoom(pub=false){nick=$('nick').value.trim();if(!nick)return toast('닉네임을 입력하세요.');host=true;isPublic=pub;room=pub?'PUBLIC':rid();uid='host-'+Math.random().toString(36).slice(2,8);roomPeerId=pub?'mw-public-room-v1':'mwroom-'+room.toLowerCase();players=[{id:uid,nick,host:true}];started=false;try{await makePeer(roomPeerId);$('roomCode').textContent=pub?'공개방':room;updateWaiting();show('waiting');status('방 생성 완료 · 짝수 인원 2~8명으로 시작하세요.')}catch(e){host=false;toast('방 생성 실패: '+(e.message||e.type));}}
+$('create').onclick=()=>createRoom(false);$('createPublic').onclick=()=>createRoom(true);
+function hostReceive(conn,d){if(!d||typeof d!=='object')return;if(d.type==='hello'){if(started||players.length>=8){conn.send({type:'error',message:'지금은 참가할 수 없습니다.'});conn.close();return}if(players.some(p=>p.peer===conn.peer))return;const p={id:String(d.clientId||('p-'+Math.random().toString(36).slice(2,10))).slice(0,40),nick:String(d.nick||'Player').slice(0,16),peer:conn.peer};players.push(p);conn.send({type:'welcome',room,players});updateWaiting();}
+if(d.type==='pairSubmission'&&started){const p=players.find(x=>x.peer===conn.peer);if(!p||!d.entry||d.entry.playerId!==p.id)return;receiveSubmission(p.id,d.entry)}}
+async function joinRoom(pub=false){nick=$('nick').value.trim();room=pub?'PUBLIC':$('code').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!nick||(!pub&&room.length!==6))return toast('닉네임과 6자리 방 코드를 확인하세요.');host=false;isPublic=pub;uid='p-'+Math.random().toString(36).slice(2,10);try{await makePeer();hostConn=peer.connect(pub?'mw-public-room-v1':'mwroom-'+room.toLowerCase(),{reliable:true});hostConn.on('open',()=>hostConn.send({type:'hello',nick,clientId:uid}));hostConn.on('data',handleData);hostConn.on('error',e=>toast('연결 실패: '+(e.message||e.type)));}catch(e){toast('접속 실패: '+(e.message||e.type))}}
+$('join').onclick=()=>joinRoom(false);$('joinPublic').onclick=()=>joinRoom(true);$('code').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6));$('code').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom(false)});
+function handleData(d){if(!d||typeof d!=='object')return;if(d.type==='error'){toast(d.message);return}if(d.type==='welcome'){players=d.players;room=d.room;show('waiting');status('방에 참가했습니다. 방장이 시작할 때까지 기다리세요.')}if(d.type==='gameStart'){players=d.players;pairs=d.pairs;pairMeta=d.pairMeta;hand=d.hand;started=true;submitted=false;revealed=false;$('tabs').classList.remove('hide');$('roomTitle').textContent='# '+room;enterTutorial();}if(d.type==='pairProgress'){if(d.pairId===pairMeta?.id)$('hint').textContent=`상대 카드 제출 완료 (${d.done}/2)`}if(d.type==='revealRound')showRevealRound(d.pairs)}
+$('begin').onclick=()=>{if(!host||players.length<2||players.length%2||started)return toast('1대1 대화를 위해 참가자는 짝수여야 합니다.');pairPlayers();started=true;for(const p of players){const pm=pairs.find(x=>x.ids.includes(p.id));const role=pm.opener===p.id?'opener':'reply';if(p.id===uid){pairMeta={...pm,role};hand=hands[p.id]}else directToPlayer(p.id,{type:'gameStart',players,pairs,pairMeta:{...pm,role},hand:hands[p.id]});}submitted=false;revealed=false;$('tabs').classList.remove('hide');$('roomTitle').textContent='# '+room;enterTutorial();render();};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-card]');if(!b||b.disabled||!started||submitted||revealed)return;const card=hand[Number(b.dataset.card)];if(!card)return;b.classList.add('playing');sfx('card');startBGM();setTimeout(()=>submitCard(card),180)});
+$('tabs').onclick=e=>{const b=e.target.closest('[data-screen]');if(!b)return;show(b.dataset.screen)};$('toGame1').onclick=$('toGame2').onclick=()=>show('game');
+function leaveRoom(){$('game').classList.remove('solo-finished');if(peer)peer.destroy();peer=null;hostConn=null;connections.clear();players=[];hand=[];hands={};pairs=[];started=false;submitted=false;revealed=false;soloMode=false;pairMeta=null;soloTranscript=[];aiHand=[];usedPlayerCardIds=new Set();usedAiCardIds=new Set();$('tabs').classList.add('hide');$('result').classList.remove('active');$('revealOverlay').classList.add('hide');show('home');status('PeerJS 연결 준비 완료 · HTTPS에서 실행하세요.')}
 $('leave').onclick=$('exitWait').onclick=leaveRoom;$('replayTutorial').onclick=openTutorial;
 status('PeerJS 연결 준비 완료 · GitHub Pages HTTPS에서 실행하세요.');
-document.addEventListener('pointerup',e=>{const b=e.target.closest('button');if(!b)return;b.style.transform='scale(.99)';requestAnimationFrame(()=>{b.style.transform='';});},{passive:true});
 </script></div></body></html>
